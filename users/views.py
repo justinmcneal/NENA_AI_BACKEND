@@ -101,7 +101,7 @@ class LoginWithPINView(APIView):
             try:
                 user = CustomUser.objects.get(phone_number=phone_number)
             except CustomUser.DoesNotExist:
-                return Response({'error': 'Invalid phone number or PIN.'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': 'Invalid phone number.'}, status=status.HTTP_400_BAD_REQUEST)
 
             # Check the hashed PIN
             if user.pin_hash and check_password(pin, user.pin_hash):
@@ -114,5 +114,5 @@ class LoginWithPINView(APIView):
                     'user_status': user.verification_status
                 }, status=status.HTTP_200_OK)
             else:
-                return Response({'error': 'Invalid phone number or PIN.'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': 'Invalid PIN.'}, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
