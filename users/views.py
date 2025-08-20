@@ -1,3 +1,118 @@
-from django.shortcuts import render
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from .serializers import UserRegistrationSerializer, OTPSerializer, ProfileCompletionSerializer, SetPINSerializer, LoginWithPINSerializer
+from .models import CustomUser
+import random
+from django.contrib.auth.hashers import make_password, check_password
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.permissions import IsAuthenticated
 
-# Create your views here.
+# Temporary storage for OTPs (In a real application, use a database or cache like Redis)
+# Key: phone_number, Value: otp_code
+otp_storage = {}
+
+class UserRegistrationView(APIView):
+    def post(self, request):
+        serializer = UserRegistrationSerializer(data=request.data)
+        if serializer.is_valid():
+            phone_number = serializer.validated_data['phone_number']
+
+            # Generate OTP
+            otp_code = str(random.randint(100000, 999999))
+            otp_storage[phone_number] = otp_code
+
+            # TODO: Integrate with SMS gateway to send OTP
+            print(f"OTP for {phone_number}: {otp_code}") # For demonstration
+
+            # Check if user already exists
+            user, created = CustomUser.objects.get_or_create(
+                phone_number=phone_number,
+                defaults={'verification_status': 'UNVERIFIED_OTP'}
+            )
+
+            return Response({'message': 'OTP sent successfully.', 'phone_number': phone_number}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class OTPVerificationView(APIView):
+    def post(self, request):
+        serializer = OTPSerializer(data=request.data)
+        if serializer.is_valid():
+            phone_number = serializer.validated_data['phone_number']
+            otp_code = serializer.validated_data['otp_code']
+
+            if otp_storage.get(phone_number) == otp_code:
+                del otp_storage[phone_number] # OTP consumed
+
+                try:
+                    user = CustomUser.objects.get(phone_number=phone_number)
+                except CustomUser.DoesNotExist:
+                    return Response({'error': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+                user.verification_status = 'OTP_VERIFIED'
+                user.save()
+
+                # Generate JWT tokens
+                refresh = RefreshToken.for_user(user)
+                return Response({
+                    'message': 'OTP verified successfully.',
+                    'refresh': str(refresh),
+                    'access': str(refresh.access_token),
+                    'user_status': user.verification_status
+                }, status=status.HTTP_200_OK)
+            else:
+                return Response({'error': 'Invalid OTP.'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class ProfileCompletionView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        serializer = ProfileCompletionSerializer(user, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            user.verification_status = 'PROFILE_COMPLETE'
+            user.save()
+            return Response({'message': 'Profile updated successfully.', 'user_status': user.verification_status}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class SetPINView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        serializer = SetPINSerializer(data=request.data)
+        if serializer.is_valid():
+            pin = serializer.validated_data['pin']
+            # Hash the PIN before saving
+            user.pin_hash = make_password(pin)
+            user.save()
+            return Response({'message': 'PIN set successfully.'}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class LoginWithPINView(APIView):
+    def post(self, request):
+        serializer = LoginWithPINSerializer(data=request.data)
+        if serializer.is_valid():
+            phone_number = serializer.validated_data['phone_number']
+            pin = serializer.validated_data['pin']
+
+            try:
+                user = CustomUser.objects.get(phone_number=phone_number)
+            except CustomUser.DoesNotExist:
+                return Response({'error': 'Invalid phone number or PIN.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Check the hashed PIN
+            if user.pin_hash and check_password(pin, user.pin_hash):
+                # Generate JWT tokens
+                refresh = RefreshToken.for_user(user)
+                return Response({
+                    'message': 'Logged in successfully.',
+                    'refresh': str(refresh),
+                    'access': str(refresh.access_token),
+                    'user_status': user.verification_status
+                }, status=status.HTTP_200_OK)
+            else:
+                return Response({'error': 'Invalid phone number or PIN.'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
