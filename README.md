@@ -65,6 +65,17 @@ Follow these steps to set up the NENA AI Backend locally:
 
     The API will be accessible at `http://127.0.0.1:8000/`.
 
+### Testing the API
+
+To test the user authentication flow, you can use the provided Python script:
+
+1.  **Ensure the Django development server is running** (as per step 5 above).
+2.  **Run the test script** in a new terminal (make sure your virtual environment is activated):
+    ```bash
+    python scripts/test_users_auth.py
+    ```
+3.  **Follow the prompts:** The script will ask you to enter the OTP, which will be printed in your Django server's console.
+
 ## Project Structure
 
 *   **`nena_ai_backend/`**: The main Django project folder.
