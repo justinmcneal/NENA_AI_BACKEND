@@ -54,6 +54,15 @@ def login_with_pin(phone_number, pin):
     print("Response:", response.json())
     return response.json()
 
+def resend_otp(phone_number):
+    print(f"\n--- Resending OTP for {phone_number} ---")
+    url = BASE_URL + "resend-otp/"
+    data = {"phone_number": phone_number}
+    response = requests.post(url, json=data)
+    print("Status Code:", response.status_code)
+    print("Response:", response.json())
+    return response
+
 if __name__ == "__main__":
     # IMPORTANT: Replace with a unique phone number for each test run
     # The OTP will be printed in your Django server console.
@@ -90,6 +99,14 @@ if __name__ == "__main__":
             # Test with non-existent phone number
             print("\n--- Testing login with non-existent phone number ---")
             login_with_pin("+639999999999", "1234")
+
+            # Test Resend OTP (should succeed)
+            print("\n--- Testing Resend OTP (should succeed) ---")
+            resend_otp(test_phone_number)
+
+            # Test Resend OTP again immediately (should fail due to 5-min limit)
+            print("\n--- Testing Resend OTP again immediately (should fail) ---")
+            resend_otp(test_phone_number)
 
         else:
             print("OTP verification failed.")
