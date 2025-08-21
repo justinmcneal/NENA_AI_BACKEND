@@ -64,6 +64,36 @@ class OTPVerificationView(APIView):
                 return Response({'error': 'Invalid OTP.'}, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class ResendOTPView(APIView):
+    def post(self, request):
+        from django.utils import timezone
+        serializer = OTPSerializer(data=request.data)
+        if serializer.is_valid():
+            phone_number = serializer.validated_data['phone_number']
+
+            try:
+                user = CustomUser.objects.get(phone_number=phone_number)
+            except CustomUser.DoesNotExist:
+                return Response({'error': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+            now = timezone.now()
+            if user.last_otp_sent_at and (now - user.last_otp_sent_at).total_seconds() < 300:
+                return Response({'error': 'OTP can only be resent once every 5 minutes.'}, status=status.HTTP_429_TOO_MANY_REQUESTS)
+
+            # Generate new OTP
+            otp_code = str(random.randint(100000, 999999))
+            otp_storage[phone_number] = otp_code
+
+            # Update last_otp_sent_at
+            user.last_otp_sent_at = now
+            user.save(update_fields=['last_otp_sent_at'])
+
+            # TODO: Integrate with SMS gateway to send OTP
+            print(f"Resent OTP for {phone_number}: {otp_code}")  # For demonstration
+
+            return Response({'message': 'OTP resent successfully.', 'phone_number': phone_number}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 class ProfileCompletionView(APIView):
     permission_classes = [IsAuthenticated]
 

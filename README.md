@@ -55,12 +55,13 @@ Follow these steps to set up the NENA AI Backend locally:
 
 4.  **Run database migrations:**
     ```bash
+    python manage.py makemigrations
     python manage.py migrate
     ```
 
 5.  **Run the development server:**
     ```bash
-    python manage.py runserver
+    python manage.py runserver 0.0.0.0:8000
     ```
 
     The API will be accessible at `http://127.0.0.1:8000/`.

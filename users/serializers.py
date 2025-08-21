@@ -20,6 +20,9 @@ class OTPSerializer(serializers.Serializer):
     phone_number = serializers.CharField(max_length=15, validators=[validate_ph_phone_number])
     otp_code = serializers.CharField(max_length=6)
 
+class ResendOTPSerializer(serializers.Serializer):
+    phone_number = serializers.CharField(max_length=15, validators=[validate_ph_phone_number])
+
 class ProfileCompletionSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser

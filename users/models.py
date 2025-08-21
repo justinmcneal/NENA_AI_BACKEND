@@ -26,6 +26,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     phone_number = models.CharField(max_length=15, unique=True)
     first_name = models.CharField(max_length=30, blank=True)
     middle_name = models.CharField(max_length=30, blank=True)
+    last_otp_sent_at = models.DateTimeField(null=True, blank=True)  # To track last OTP sent time
     last_name = models.CharField(max_length=30, blank=True)
     pin_hash = models.CharField(max_length=128, blank=True, null=True) # Stores hashed PIN
 
