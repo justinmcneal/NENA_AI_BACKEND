@@ -29,6 +29,9 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     last_otp_sent_at = models.DateTimeField(null=True, blank=True)  # To track last OTP sent time
     last_name = models.CharField(max_length=30, blank=True)
     pin_hash = models.CharField(max_length=128, blank=True, null=True) # Stores hashed PIN
+    income = models.DecimalField(max_digits=12, decimal_places=2, default=0.0)
+    
+
 
     # Verification Status Choices
     VERIFICATION_STATUS_CHOICES = [
@@ -42,6 +45,18 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         max_length=20,
         choices=VERIFICATION_STATUS_CHOICES,
         default='UNVERIFIED_OTP',
+    )
+
+    LOAN_STATUS_CHOICES = [
+        ('NONE', 'No Loan'),
+        ('ACTIVE', 'Active Loan'),
+        ('COMPLETED', 'Completed Loan'),
+        ('DEFAULTED', 'Defaulted Loan'),
+    ]
+    loan_status = models.CharField(
+        max_length=20,
+        choices=LOAN_STATUS_CHOICES,
+        default='NONE',
     )
 
     is_active = models.BooleanField(default=True)
