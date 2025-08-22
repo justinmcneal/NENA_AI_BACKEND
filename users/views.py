@@ -146,3 +146,17 @@ class LoginWithPINView(APIView):
             else:
                 return Response({'error': 'Invalid PIN.'}, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class FetchProfileView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        return Response({
+            "phone_number": user.phone_number,
+            "first_name": user.first_name,
+            "middle_name": user.middle_name,
+            "last_name": user.last_name,
+            "verification_status": user.verification_status,
+            "date_joined": user.date_joined,
+        }, status=status.HTTP_200_OK)

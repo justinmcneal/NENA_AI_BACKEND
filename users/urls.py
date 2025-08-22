@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import ResendOTPView, UserRegistrationView, OTPVerificationView, ProfileCompletionView, SetPINView, LoginWithPINView
+from .views import ResendOTPView, UserRegistrationView, OTPVerificationView, ProfileCompletionView, SetPINView, LoginWithPINView, FetchProfileView
 
 urlpatterns = [
     path('register/', UserRegistrationView.as_view(), name='user_register'),
@@ -10,4 +10,7 @@ urlpatterns = [
     path('complete-profile/', ProfileCompletionView.as_view(), name='complete_profile'),
     path('set-pin/', SetPINView.as_view(), name='set_pin'),
     path('login-with-pin/', LoginWithPINView.as_view(), name='login_with_pin'),
+
+    path('profile/', FetchProfileView.as_view(), name='fetch-profile'),  
+
 ]
