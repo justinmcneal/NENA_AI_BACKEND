@@ -11,10 +11,10 @@ def validate_ph_phone_number(value):
 class UserRegistrationSerializer(serializers.Serializer):
     phone_number = serializers.CharField(max_length=15, validators=[validate_ph_phone_number])
 
-    def validate_phone_number(self, value):
-        if CustomUser.objects.filter(phone_number=value).exists():
-            raise serializers.ValidationError("A user with this phone number already exists.")
-        return value
+    # def validate_phone_number(self, value):
+    #     if CustomUser.objects.filter(phone_number=value).exists():
+    #         raise serializers.ValidationError("A user with this phone number already exists.")
+    #     return value
 
 class OTPSerializer(serializers.Serializer):
     phone_number = serializers.CharField(max_length=15, validators=[validate_ph_phone_number])

@@ -1,7 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import UserRegistrationSerializer, OTPSerializer, ProfileCompletionSerializer, SetPINSerializer, LoginWithPINSerializer
+from .serializers import ResendOTPSerializer, UserRegistrationSerializer, OTPSerializer, ProfileCompletionSerializer, SetPINSerializer, LoginWithPINSerializer
 from .models import CustomUser
 import random
 from django.contrib.auth.hashers import make_password, check_password
@@ -18,6 +18,12 @@ class UserRegistrationView(APIView):
         if serializer.is_valid():
             phone_number = serializer.validated_data['phone_number']
 
+            # Check if the user exists
+            user, created = CustomUser.objects.get_or_create(
+                phone_number=phone_number,
+                defaults={'verification_status': 'UNVERIFIED_OTP'}
+            )
+
             # Generate OTP
             otp_code = str(random.randint(100000, 999999))
             otp_storage[phone_number] = otp_code
@@ -25,15 +31,23 @@ class UserRegistrationView(APIView):
             # TODO: Integrate with SMS gateway to send OTP
             print(f"OTP for {phone_number}: {otp_code}") # For demonstration
 
-            # Check if user already exists
-            user, created = CustomUser.objects.get_or_create(
-                phone_number=phone_number,
-                defaults={'verification_status': 'UNVERIFIED_OTP'}
-            )
+            # Determine if this is a login flow for an existing user
+            is_login_flow = not created
 
-            return Response({'message': 'OTP sent successfully.', 'phone_number': phone_number}, status=status.HTTP_200_OK)
+            if is_login_flow:
+                message = 'User already exists. OTP sent for login.'
+            else:
+                message = 'OTP sent successfully.'
+
+            # Return the response with the is_login_flow flag
+            return Response({
+                'message': message,
+                'phone_number': phone_number,
+                'is_login_flow': is_login_flow
+            }, status=status.HTTP_200_OK)
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+    
 class OTPVerificationView(APIView):
     def post(self, request):
         serializer = OTPSerializer(data=request.data)
@@ -67,7 +81,7 @@ class OTPVerificationView(APIView):
 class ResendOTPView(APIView):
     def post(self, request):
         from django.utils import timezone
-        serializer = OTPSerializer(data=request.data)
+        serializer = ResendOTPSerializer(data=request.data)  # Use the new serializer
         if serializer.is_valid():
             phone_number = serializer.validated_data['phone_number']
 
