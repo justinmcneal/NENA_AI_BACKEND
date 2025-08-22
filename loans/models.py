@@ -1,6 +1,6 @@
-import uuid
 from django.db import models
 from django.conf import settings
+import uuid
 
 class Loan(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="loans")
@@ -37,9 +37,28 @@ class Loan(models.Model):
 
         # Update user's monthly income
         self.user.income = income
-        self.user.save(update_fields=['income'])
 
+        # Update user's loan_status based on loan conditions
+        # Save the loan first to ensure it’s in the database for querying
         super().save(*args, **kwargs)
+
+        # Check all loans for the user
+        user_loans = self.user.loans.all()
+        has_pending = any(loan.is_verified_by_bank is False for loan in user_loans)
+        has_active = any(loan.is_verified_by_bank and loan.months_left > 0 for loan in user_loans)
+        has_completed = any(loan.is_verified_by_bank and loan.months_left == 0 for loan in user_loans)
+
+        if has_pending:
+            self.user.loan_status = 'PENDING'
+        elif has_active:
+            self.user.loan_status = 'ACTIVE'
+        elif has_completed:
+            self.user.loan_status = 'NONE'
+        else:
+            self.user.loan_status = 'NONE'
+
+        # Save the updated user loan_status
+        self.user.save(update_fields=['income', 'loan_status'])
 
     def __str__(self):
         return f"{self.loan_code} ({self.user})"

@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from .serializers import ResendOTPSerializer, UserRegistrationSerializer, OTPSerializer, ProfileCompletionSerializer, SetPINSerializer, LoginWithPINSerializer
 from .models import CustomUser
+from loans.models import Loan
 import random
 from django.contrib.auth.hashers import make_password, check_password
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -171,4 +172,40 @@ class FetchProfileView(APIView):
             "last_name": user.last_name,
             "verification_status": user.verification_status,
             "date_joined": user.date_joined,
+        }, status=status.HTTP_200_OK)
+
+class CheckLoanStatusView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        user.update_loan_status()  # Call the method from CustomUser model
+        return Response({
+            "message": "Loan status updated successfully.",
+            "phone_number": user.phone_number,
+            "loan_status": user.loan_status
+        }, status=status.HTTP_200_OK)
+    
+class FetchLoanDetailsView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        user = request.user
+        loans = Loan.objects.filter(user=user).order_by('-created_at')
+        loan_data = [
+            {
+                "loan_code": loan.loan_code,
+                "loaned_amount": float(loan.loaned_amount),
+                "amount_payable": float(loan.amount_payable),
+                "monthly_repayment": float(loan.monthly_repayment),
+                "months_left": loan.months_left,
+                "loan_term": loan.loan_term,
+                "is_verified_by_bank": loan.is_verified_by_bank,
+                "created_at": loan.created_at
+            } for loan in loans
+        ]
+        return Response({
+            "message": "Loan details retrieved successfully.",
+            "phone_number": user.phone_number,
+            "loan_status": user.loan_status,
+            "loans": loan_data
         }, status=status.HTTP_200_OK)
