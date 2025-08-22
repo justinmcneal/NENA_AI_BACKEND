@@ -1,0 +1,64 @@
+{% extends 'admin/base_site.html' %}
+
+{% block content %}
+<div id="content-main">
+   
+    <div class="module">
+        <h2>Overall User Statistics</h2>
+        <p>Total Users: <strong>{{ total_users }}</strong></p>
+    </div>
+
+    <div class="module">
+        <h2>Users by Verification Status</h2>
+        <table style="width: 50%;">
+            <thead>
+                <tr>
+                    <th>Status</th>
+                    <th>Count</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for status in users_by_verification_status %}
+                <tr>
+                    <td>{{ status.verification_status }}</td>
+                    <td>{{ status.count }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="2">No data available.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="module">
+        <h2>Users by Loan Status</h2>
+        <table style="width: 50%;">
+            <thead>
+                <tr>
+                    <th>Status</th>
+                    <th>Count</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for status in users_by_loan_status %}
+                <tr>
+                    <td>{{ status.loan_status }}</td>
+                    <td>{{ status.count }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="2">No data available.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="module">
+        <h2>User Data Table</h2>
+        <p>Click <a href="{% url 'admin:users_customuser_changelist' %}">here</a> to view the full user data table.</p>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,56 @@
+{% extends 'admin/base_site.html' %}
+{% load static %}
+
+{% block content %}
+<div id="content-main">
+    <h1>{{ title }}</h1>
+
+    <div class="module">
+        <h2>Request Details</h2>
+        <p><strong>Request Type:</strong> {{ user_request.request_type }}</p>
+        <p><strong>Description:</strong> {{ user_request.description }}</p>
+        <p><strong>Status:</strong> {{ user_request.status }}</p>
+        <p><strong>Submission Date:</strong> {{ user_request.submission_date }}</p>
+    </div>
+
+    <div class="module">
+        <h2>User Information</h2>
+        <p><strong>Username:</strong> {{ user.username }}</p>
+        <p><strong>Phone Number:</strong> {{ user.phone_number }}</p>
+        <p><strong>First Name:</strong> {{ user.first_name }}</p>
+        <p><strong>Last Name:</strong> {{ user.last_name }}</p>
+        <p><strong>Income:</strong> {{ user.income }}</p>
+        <p><strong>Verification Status:</strong> {{ user.verification_status }}</p>
+        <p><strong>Loan Status:</strong> {{ user.loan_status }}</p>
+        <p><strong>Active:</strong> {{ user.is_active }}</p>
+        <p><strong>Staff:</strong> {{ user.is_staff }}</p>
+        <p><strong>Date Joined:</strong> {{ user.date_joined }}</p>
+    </div>
+
+    <div class="module">
+        <h2>Attachments</h2>
+        {% if attachments %}
+            <ul>
+                {% for attachment in attachments %}
+                    <li>
+                        <a href="{{ attachment.file.url }}" target="_blank">{{ attachment.file.name }}</a>
+                        {% if attachment.description %}({{ attachment.description }}){% endif %}
+                        {% if attachment.file.url|lower|slice:'-4:' == ".pdf" %}
+                            <br><iframe src="{{ attachment.file.url }}" width="600" height="400" style="border: none;"></iframe>
+                        {% elif attachment.file.url|lower|slice:'-4:' == ".jpg" or attachment.file.url|lower|slice:'-4:' == ".png" or attachment.file.url|lower|slice:'-5:' == ".jpeg" or attachment.file.url|lower|slice:'-4:' == ".gif" %}
+                            <br><img src="{{ attachment.file.url }}" style="max-width: 600px; max-height: 400px; border: 1px solid #ccc;">
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No attachments for this request.</p>
+        {% endif %}
+    </div>
+
+    <div class="submit-row">
+        <p class="deletelink-box"><a href="{% url 'admin:documents_userrequest_change' user_request.pk %}" class="deletelink">Edit Request</a></p>
+        <p class="changelink-box"><a href="{% url 'admin:documents_userrequest_changelist' %}" class="changelink">Back to Request List</a></p>
+    </div>
+</div>
+{% endblock %}
