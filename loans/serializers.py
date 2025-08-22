@@ -1,12 +1,11 @@
 from rest_framework import serializers
 from .models import Loan
 
-class LoanSerializer(serializers.ModelSerializer):
+class ApplyLoanSerializer(serializers.ModelSerializer):
+    loaned_amount = serializers.DecimalField(max_digits=12, decimal_places=2)
+    loan_term = serializers.IntegerField()
+    monthly_income = serializers.DecimalField(max_digits=12, decimal_places=2)
+
     class Meta:
         model = Loan
-        fields = [
-            "id", "loan_code", "loaned_amount",
-            "amount_payable", "monthly_repayment",
-            "months_left", "is_verified_by_bank", "created_at"
-        ]
-        read_only_fields = ["loan_code", "amount_payable", "monthly_repayment", "months_left", "created_at"]
+        fields = ['loaned_amount', 'loan_term', 'monthly_income']
