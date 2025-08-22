@@ -51,6 +51,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         ('NONE', 'No Loan'),
         ('ACTIVE', 'Active Loan'),
         ('COMPLETED', 'Completed Loan'),
+        ('PENDING', 'Pending Loan'),
         ('DEFAULTED', 'Defaulted Loan'),
     ]
     loan_status = models.CharField(
@@ -70,3 +71,21 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.phone_number
+    
+    def update_loan_status(self):
+        """Updates the user's loan_status based on their loans."""
+        user_loans = self.loans.all()
+        has_pending = any(loan.is_verified_by_bank is False for loan in user_loans)
+        has_active = any(loan.is_verified_by_bank and loan.months_left > 0 for loan in user_loans)
+        has_completed = any(loan.is_verified_by_bank and loan.months_left == 0 for loan in user_loans)
+
+        if has_pending:
+            self.loan_status = 'PENDING'
+        elif has_active:
+            self.loan_status = 'ACTIVE'
+        elif has_completed:
+            self.loan_status = 'NONE'
+        else:
+            self.loan_status = 'NONE'
+
+        self.save(update_fields=['loan_status'])
