@@ -18,28 +18,26 @@ class UserRegistrationView(APIView):
         if serializer.is_valid():
             phone_number = serializer.validated_data['phone_number']
 
-            # Check if the user exists
+            # Find existing user or create a new one
             user, created = CustomUser.objects.get_or_create(
                 phone_number=phone_number,
                 defaults={'verification_status': 'UNVERIFIED_OTP'}
             )
 
-            # Generate OTP
-            otp_code = str(random.randint(100000, 999999))
-            otp_storage[phone_number] = otp_code
-
-            # TODO: Integrate with SMS gateway to send OTP
-            print(f"OTP for {phone_number}: {otp_code}") # For demonstration
-
             # Determine if this is a login flow for an existing user
             is_login_flow = not created
+
+            # Always generate and send an OTP
+            otp_code = str(random.randint(100000, 999999))
+            otp_storage[phone_number] = otp_code
+            print(f"OTP for {phone_number}: {otp_code}")  # For demonstration
 
             if is_login_flow:
                 message = 'User already exists. OTP sent for login.'
             else:
                 message = 'OTP sent successfully.'
 
-            # Return the response with the is_login_flow flag
+            # Always return a 200 OK response with the flag
             return Response({
                 'message': message,
                 'phone_number': phone_number,
@@ -47,7 +45,7 @@ class UserRegistrationView(APIView):
             }, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+        
 class OTPVerificationView(APIView):
     def post(self, request):
         serializer = OTPSerializer(data=request.data)
