@@ -9,6 +9,8 @@ from .serializers import ApplyLoanSerializer
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib.admin.views.decorators import staff_member_required
 from django.views.decorators.http import require_POST
+from datetime import date, timedelta
+from django.contrib import messages # Import messages
 
 class ApplyLoanView(APIView):
     permission_classes = [IsAuthenticated]
@@ -41,6 +43,7 @@ def verify_loan(request, loan_id, action):
     loan = get_object_or_404(Loan, id=loan_id)
     if action == 'approve':
         loan.status = 'APPROVED'
+        loan.next_repayment_due_date = date.today() + timedelta(days=30)
     elif action == 'reject':
         loan.status = 'REJECTED'
     loan.save()
@@ -55,7 +58,11 @@ def add_repayment_view(request, loan_id):
     if amount:
         try:
             loan.add_repayment(amount)
-        except Exception as e:
-            # Handle exceptions, maybe with a message
-            pass
+            messages.success(request, "Repayment added successfully!")
+        except ValueError as e: # Catch ValueError specifically
+            messages.error(request, str(e)) # Display the error message
+        except Exception as e: # Catch other exceptions
+            messages.error(request, "An unexpected error occurred during repayment.")
+    else:
+        messages.error(request, "Repayment amount is required.")
     return redirect(request.META.get('HTTP_REFERER', '/'))

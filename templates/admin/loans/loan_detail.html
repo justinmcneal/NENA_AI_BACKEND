@@ -4,6 +4,14 @@
 {% block content %}
 <div id="content-main">
 
+    {% if messages %}
+    <ul class="messagelist">
+        {% for message in messages %}
+        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
     <div class="module">
         <h2>Loan Information</h2>
         <p><strong>Loan Code:</strong> {{ loan.loan_code }}</p>
@@ -16,6 +24,10 @@
         <p><strong>Monthly Income:</strong> {{ loan.monthly_income }}</p>
         <p><strong>Created At:</strong> {{ loan.created_at }}</p>
         <p><strong>Status:</strong> {{ loan.get_status_display }}</p>
+        {% if loan.status == 'APPROVED' %}
+        <p><strong>Next Repayment Due Date:</strong> {{ loan.next_repayment_due_date }}</p>
+        <p><strong>Repayment Status:</strong> {{ loan.get_repayment_status_display }}</p>
+        {% endif %}
         <div class="submit-row">
             {% if loan.status == 'PENDING' %}
             <a href="{% url 'verify_loan' loan.id 'approve' %}" class="button">Approve</a>
