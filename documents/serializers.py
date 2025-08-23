@@ -4,14 +4,14 @@ from django.utils import timezone
 
 class DocumentUploadSerializer(serializers.Serializer):
     document_type = serializers.CharField(max_length=50)
-    document = serializers.ImageField()  # Use ImageField for image files
+    file = serializers.FileField()
 
     def create(self, validated_data):
         # This method will be called by the view to save the document
         # The user will be passed in the view context
         user = self.context['request'].user
         document_type = validated_data['document_type']
-        document_file = validated_data['document']
+        document_file = validated_data['file']
 
         # Check if a document of this type already exists for the user
         existing_doc = UserDocument.objects.filter(user=user, document_type=document_type).first()
