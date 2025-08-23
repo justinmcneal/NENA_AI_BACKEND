@@ -4,6 +4,14 @@
 {% block content %}
 <div id="content-main">
 
+    {% if messages %}
+    <ul class="messagelist">
+        {% for message in messages %}
+        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
     <div class="module">
         <h2>Loan Information</h2>
         <p><strong>Loan Code:</strong> {{ loan.loan_code }}</p>
