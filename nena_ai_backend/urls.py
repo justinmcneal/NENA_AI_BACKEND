@@ -11,11 +11,12 @@ urlpatterns = [
     path('api/documents/', include('documents.urls')),
     path('api/chat/', include('chat.urls')),
     path('api/analytics/', include('analytics.urls')),
-    
+    path('logout/', auth_views.LogoutView.as_view(next_page='/admin/'), name='custom_logout'), # Custom logout URL
 ]
 
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-    path('api/', include('chat.urls')),
-    path('logout/', auth_views.LogoutView.as_view(next_page='/admin/'), name='custom_logout'), # Custom logout URL)
+    urlpatterns += [
+        path('api/', include('chat.urls')),
+    ]

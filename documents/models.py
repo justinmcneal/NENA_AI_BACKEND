@@ -24,3 +24,12 @@ class Attachment(models.Model):
 
     def __str__(self):
         return f"Attachment for {self.user_request.request_type} - {self.file.name}"
+
+class UserDocument(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='documents')
+    document_type = models.CharField(max_length=50)
+    file = models.FileField(upload_to='user_documents/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.document_type}"

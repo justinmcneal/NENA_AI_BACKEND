@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, reverse
 from django.shortcuts import render, get_object_or_404
 from django.utils.html import format_html
 from .models import UserRequest, Attachment
@@ -45,9 +45,8 @@ class UserRequestAdmin(admin.ModelAdmin):
 
     def view_request_button(self, obj):
         return format_html('<a class="button" href="{}">View</a>',
-                           self.admin_site.reverse('admin:userrequest_detail', args=[obj.pk]))
+                           reverse('admin:userrequest_detail', args=[obj.pk]))
     view_request_button.short_description = 'View Details'
-    view_request_button.allow_tags = True
 
     def user_request_detail_view(self, request, object_id):
         user_request = get_object_or_404(UserRequest, pk=object_id)
