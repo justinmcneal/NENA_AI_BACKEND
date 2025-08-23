@@ -32,6 +32,28 @@ class ProfileCompletionSerializer(serializers.ModelSerializer):
             'last_name': {'required': True},
         }
 
+class UserVerificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = [
+            'date_of_birth', 'gender', 'civil_status', 'education_level',
+            'region', 'province', 'city_town', 'barangay',
+            'business_name', 'business_address', 'business_industry'
+        ]
+        extra_kwargs = {
+            'date_of_birth': {'required': True},
+            'gender': {'required': True},
+            'civil_status': {'required': True},
+            'education_level': {'required': True},
+            'region': {'required': True},
+            'province': {'required': True},
+            'city_town': {'required': True},
+            'barangay': {'required': True},
+            'business_name': {'required': True},
+            'business_address': {'required': True},
+            'business_industry': {'required': True},
+        }
+
 class SetPINSerializer(serializers.Serializer):
     phone_number = serializers.CharField(max_length=15, validators=[validate_ph_phone_number])
     pin = serializers.CharField(min_length=4, max_length=6) # Assuming 4-6 digit PIN

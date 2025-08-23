@@ -1,7 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import ResendOTPSerializer, UserRegistrationSerializer, OTPSerializer, ProfileCompletionSerializer, SetPINSerializer, LoginWithPINSerializer
+from .serializers import ResendOTPSerializer, UserRegistrationSerializer, OTPSerializer, ProfileCompletionSerializer, UserVerificationSerializer, SetPINSerializer, LoginWithPINSerializer
 from .models import CustomUser
 from loans.models import Loan
 import random
@@ -118,6 +118,29 @@ class ProfileCompletionView(APIView):
             user.verification_status = 'PROFILE_COMPLETE'
             user.save()
             return Response({'message': 'Profile updated successfully.', 'user_status': user.verification_status}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class UserVerificationView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        
+        if user.verification_status != 'PROFILE_COMPLETE':
+            return Response(
+                {'error': f'You cannot submit verification details with a status of {user.verification_status}.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        serializer = UserVerificationSerializer(user, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            user.verification_status = 'DOCUMENTS_PENDING'
+            user.save(update_fields=['verification_status'])
+            return Response(
+                {'message': 'Verification details submitted successfully.', 'user_status': user.verification_status},
+                status=status.HTTP_200_OK
+            )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class SetPINView(APIView):

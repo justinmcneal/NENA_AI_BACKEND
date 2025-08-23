@@ -7,6 +7,7 @@ urlpatterns = [
     path('resend-otp/', ResendOTPView.as_view(), name='resend_otp'),
 
     path('complete-profile/', ProfileCompletionView.as_view(), name='complete_profile'),
+    path('verify-details/', UserVerificationView.as_view(), name='verify_details'),
     path('set-pin/', SetPINView.as_view(), name='set_pin'),
     path('login-with-pin/', LoginWithPINView.as_view(), name='login_with_pin'),
 
