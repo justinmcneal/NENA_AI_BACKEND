@@ -52,14 +52,12 @@ class UserRequestAdmin(admin.ModelAdmin):
         user_request = get_object_or_404(UserRequest, pk=object_id)
         user = user_request.user
         attachments = user_request.attachments.all()
-        loans = user.loans.all() # Retrieve all loans associated with the user
 
         context = dict(
             self.admin_site.each_context(request),
             user_request=user_request,
             user=user,
             attachments=attachments,
-            loans=loans, # Pass loans to the template
             title=f"Details for Request #{object_id}"
         )
         return render(request, 'admin/documents/userrequest_detail.html', context)
