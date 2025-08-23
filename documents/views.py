@@ -6,6 +6,7 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from .serializers import DocumentUploadSerializer
 from users.models import CustomUser  # Import CustomUser to update verification status
+from .services import analyze_document # Import the analysis service
 
 class DocumentUploadView(APIView):
     permission_classes = [IsAuthenticated]  # Ensure only authenticated users can upload
@@ -17,6 +18,13 @@ class DocumentUploadView(APIView):
             # The serializer's create method handles saving the document
             document_instance = serializer.save()
 
+            # --- Trigger Document Analysis ---
+            # Pass the file object directly to the service
+            analysis_status, _ = analyze_document(document_instance.file)
+            document_instance.analysis_status = analysis_status
+            document_instance.save(update_fields=['analysis_status'])
+            # ---------------------------------
+
             user = request.user  # The authenticated user
 
             # Optionally update user's verification status
@@ -26,7 +34,7 @@ class DocumentUploadView(APIView):
                 user.save(update_fields=['verification_status'])
 
             return Response(
-                {'message': f"{document_instance.document_type} uploaded successfully."},
+                {'message': f"{document_instance.document_type} uploaded successfully. Analysis status: {analysis_status}"},
                 status=status.HTTP_200_OK
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
