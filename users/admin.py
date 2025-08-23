@@ -7,11 +7,11 @@ from .models import CustomUser
 @admin.register(CustomUser)
 class CustomUserAdmin(admin.ModelAdmin):
     list_display = (
-        'username', 'phone_number', 'first_name', 'last_name',
+        'phone_number', 'first_name', 'last_name',
         'income', 'verification_status', 'loan_status', 'is_active', 'is_staff', 'date_joined'
     )
     list_filter = ('is_active', 'is_staff', 'verification_status', 'loan_status')
-    search_fields = ('username', 'phone_number', 'first_name', 'last_name')
+    search_fields = ('phone_number', 'first_name', 'last_name')
     ordering = ('-date_joined',)
 
     def get_urls(self):
