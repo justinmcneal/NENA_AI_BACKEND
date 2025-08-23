@@ -1,0 +1,47 @@
+{% extends 'admin/base.html' %}
+{% load static %}
+
+{% block title %}{{ title }} | NENA AI Backend Admin{% endblock %}
+
+{% block branding %}
+    <h1 id="site-name"><a href="{% url 'admin:index' %}">NENA AI Backend Administration</a></h1>
+{% endblock %}
+
+{% block nav-global %}
+    {# Removed {{ block.super }} from here #}
+{% endblock %}
+
+{% block userlinks %}
+    <div style="display: flex; align-items: center; gap: 15px;"> {# Flex container for horizontal alignment #}
+        {# Default user links (Welcome, admin, View site, Change password) will be rendered by block.super in nav-global #}
+        {# Custom Navigation #}
+        <ul style="display: flex; list-style: none; padding: 0; margin: 0;">
+            <li style="margin-right: 15px;"><a href="{% url 'admin:user_dashboard' %}">Dashboard</a></li>
+            <li style="margin-right: 15px;"><a href="{% url 'admin:app_list' app_label='documents' %}?_changelist_filters=q%3D">Requests</a></li>
+            <li>
+                <form id="logout-form" action="{% url 'custom_logout' %}" method="post" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" style="background: none; border: none; color: red; cursor: pointer; font-size: 1em; padding: 0;">Log out</button>
+                </form>
+            </li>
+        </ul>
+    </div>
+{% endblock %}
+
+{% block extrahead %}
+    {{ block.super %}
+    <style>
+        /* Ensure userlinks are visible and styled */
+        #user-tools {
+            display: flex; /* Make user-tools a flex container */
+            align-items: center;
+            gap: 15px;
+        }
+        #user-tools a {
+            color: #007bff; /* Adjust link color */
+        }
+        #user-tools .user-info {
+            color: #333; /* Adjust color for contrast */
+        }
+    </style>
+{% endblock %}

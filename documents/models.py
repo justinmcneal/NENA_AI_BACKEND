@@ -1,18 +1,26 @@
 from django.db import models
-from users.models import CustomUser  # Import CustomUser from your users app
-from django.utils import timezone
+from users.models import CustomUser
 
-class UserDocument(models.Model):
-    user = models.ForeignKey(CustomUser, related_name='documents', on_delete=models.CASCADE)
-    document_type = models.CharField(max_length=50)  # e.g., 'ID_FRONT', 'ID_BACK', 'PROOF_OF_INCOME'
-    file = models.FileField(upload_to='user_documents/')  # Files will be stored in MEDIA_ROOT/user_documents/
-    uploaded_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        # Ensures a user can only upload one of each document type
-        unique_together = ('user', 'document_type')
-        verbose_name = "User Document"
-        verbose_name_plural = "User Documents"
+class UserRequest(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='user_requests')
+    request_type = models.CharField(max_length=100)
+    description = models.TextField()
+    
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('accepted', 'Accepted'),
+        ('rejected', 'Rejected'),
+    ]
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    submission_date = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.user.phone_number} - {self.document_type}"
+        return f"Request by {self.user.username} - {self.request_type}"
+
+class Attachment(models.Model):
+    user_request = models.ForeignKey(UserRequest, on_delete=models.CASCADE, related_name='attachments')
+    file = models.FileField(upload_to='request_attachments/')
+    description = models.CharField(max_length=255, blank=True, null=True)
+
+    def __str__(self):
+        return f"Attachment for {self.user_request.request_type} - {self.file.name}"
