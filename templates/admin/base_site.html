@@ -17,7 +17,7 @@
         {# Custom Navigation #}
         <ul style="display: flex; list-style: none; padding: 0; margin: 0;">
             <li style="margin-right: 15px;"><a href="{% url 'admin:user_dashboard' %}">Dashboard</a></li>
-            <li style="margin-right: 15px;"><a href="{% url 'admin:app_list' app_label='documents' %}?_changelist_filters=q%3D">Requests</a></li>
+            <li style="margin-right: 15px;"><a href="{% url 'admin:loans_loan_changelist' %}">Requests</a></li>
             <li>
                 <form id="logout-form" action="{% url 'custom_logout' %}" method="post" style="display: inline;">
                     {% csrf_token %}

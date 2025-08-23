@@ -13,17 +13,27 @@
     </div>
 
     <div class="module">
-        <h2>User Information</h2>
-        <p><strong>Username:</strong> {{ user.username }}</p>
-        <p><strong>Phone Number:</strong> {{ user.phone_number }}</p>
-        <p><strong>First Name:</strong> {{ user.first_name }}</p>
-        <p><strong>Last Name:</strong> {{ user.last_name }}</p>
-        <p><strong>Income:</strong> {{ user.income }}</p>
-        <p><strong>Verification Status:</strong> {{ user.verification_status }}</p>
-        <p><strong>Loan Status:</strong> {{ user.loan_status }}</p>
-        <p><strong>Active:</strong> {{ user.is_active }}</p>
-        <p><strong>Staff:</strong> {{ user.is_staff }}</p>
-        <p><strong>Date Joined:</strong> {{ user.date_joined }}</p>
+        <h2>Loan Information</h2>
+        {% if loans %}
+            {% for loan in loans %}
+                <p><strong>Loan Code:</strong> {{ loan.loan_code }}</p>
+                <p><strong>Loaned Amount:</strong> {{ loan.loaned_amount }}</p>
+                <p><strong>Amount Payable:</strong> {{ loan.amount_payable }}</p>
+                <p><strong>Monthly Repayment:</strong> {{ loan.monthly_repayment }}</p>
+                <p><strong>Months Left:</strong> {{ loan.months_left }}</p>
+                <p><strong>Loan Term:</strong> {{ loan.loan_term }}</p>
+                <p><strong>Monthly Income:</strong> {{ loan.monthly_income }}</p>
+                <p><strong>Created At:</strong> {{ loan.created_at }}</p>
+                <p><strong>Status:</strong> {{ loan.get_status_display }}</p>
+                <div class="submit-row">
+                    <a href="{% url 'verify_loan' loan.id 'approve' %}" class="button">Approve</a>
+                    <a href="{% url 'verify_loan' loan.id 'reject' %}" class="button" style="background-color: #ba2121;">Reject</a>
+                </div>
+                <hr>
+            {% endfor %}
+        {% else %}
+            <p>No loan information available for this user.</p>
+        {% endif %}
     </div>
 
     <div class="module">

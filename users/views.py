@@ -222,7 +222,7 @@ class FetchLoanDetailsView(APIView):
                 "monthly_repayment": float(loan.monthly_repayment),
                 "months_left": loan.months_left,
                 "loan_term": loan.loan_term,
-                "is_verified_by_bank": loan.is_verified_by_bank,
+                "status": loan.status,
                 "created_at": loan.created_at
             } for loan in loans
         ]

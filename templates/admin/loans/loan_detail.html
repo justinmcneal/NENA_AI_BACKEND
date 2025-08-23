@@ -1,0 +1,29 @@
+{% extends 'admin/base_site.html' %}
+{% load static %}
+
+{% block content %}
+<div id="content-main">
+
+    <div class="module">
+        <h2>Loan Information</h2>
+        <p><strong>Loan Code:</strong> {{ loan.loan_code }}</p>
+        <p><strong>User:</strong> {{ loan.user }}</p>
+        <p><strong>Loaned Amount:</strong> {{ loan.loaned_amount }}</p>
+        <p><strong>Amount Payable:</strong> {{ loan.amount_payable }}</p>
+        <p><strong>Monthly Repayment:</strong> {{ loan.monthly_repayment }}</p>
+        <p><strong>Months Left:</strong> {{ loan.months_left }}</p>
+        <p><strong>Loan Term:</strong> {{ loan.loan_term }}</p>
+        <p><strong>Monthly Income:</strong> {{ loan.monthly_income }}</p>
+        <p><strong>Created At:</strong> {{ loan.created_at }}</p>
+        <p><strong>Status:</strong> {{ loan.get_status_display }}</p>
+        <div class="submit-row">
+            <a href="{% url 'verify_loan' loan.id 'approve' %}" class="button">Approve</a>
+            <a href="{% url 'verify_loan' loan.id 'reject' %}" class="button" style="background-color: #ba2121;">Reject</a>
+        </div>
+    </div>
+
+    <div class="submit-row">
+        <p class="changelink-box"><a href="{% url 'admin:loans_loan_changelist' %}" class="changelink">Back to Loan List</a></p>
+    </div>
+</div>
+{% endblock %}

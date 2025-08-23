@@ -3,6 +3,11 @@ from django.conf import settings
 import uuid
 
 class Loan(models.Model):
+    STATUS_CHOICES = [
+        ('PENDING', 'Pending'),
+        ('APPROVED', 'Approved'),
+        ('REJECTED', 'Rejected'),
+    ]
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="loans")
     loan_code = models.CharField(max_length=12, unique=True, editable=False)
     loaned_amount = models.DecimalField(max_digits=12, decimal_places=2)
@@ -12,48 +17,49 @@ class Loan(models.Model):
     loan_term = models.IntegerField(default=12)
     monthly_income = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
     created_at = models.DateTimeField(auto_now_add=True)
-    is_verified_by_bank = models.BooleanField(default=False)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PENDING')
 
     def save(self, *args, **kwargs):
         if not self.loan_code:
             self.loan_code = uuid.uuid4().hex[:10].upper()
 
-        interest_rate = 0.02
-        total_payable = float(self.loaned_amount) * (1 + interest_rate)
+        # Only calculate these on creation
+        if self.pk is None:
+            interest_rate = 0.02
+            total_payable = float(self.loaned_amount) * (1 + interest_rate)
 
-        # Use user-input monthly_income if provided
-        income = float(self.monthly_income or getattr(self.user, "income", 0) or 0)
+            # Use user-input monthly_income if provided
+            income = float(self.monthly_income or getattr(self.user, "income", 0) or 0)
 
-        months = self.loan_term or 12
-        max_affordable = income * 0.3  # 30% of income
-        monthly = total_payable / months
-        if max_affordable > 0 and monthly > max_affordable:
-            months = int(total_payable / max_affordable) + 1
+            months = self.loan_term or 12
+            max_affordable = income * 0.3  # 30% of income
             monthly = total_payable / months
+            if max_affordable > 0 and monthly > max_affordable:
+                months = int(total_payable / max_affordable) + 1
+                monthly = total_payable / months
 
-        self.amount_payable = round(total_payable, 2)
-        self.monthly_repayment = round(monthly, 2)
-        self.months_left = months
+            self.amount_payable = round(total_payable, 2)
+            self.monthly_repayment = round(monthly, 2)
+            self.months_left = months
 
-        # Update user's monthly income
-        self.user.income = income
+            # Update user's monthly income
+            self.user.income = income
 
-        # Update user's loan_status based on loan conditions
         # Save the loan first to ensure it’s in the database for querying
         super().save(*args, **kwargs)
 
-        # Check all loans for the user
+        # Update user's loan_status based on loan conditions
         user_loans = self.user.loans.all()
-        has_pending = any(loan.is_verified_by_bank is False for loan in user_loans)
-        has_active = any(loan.is_verified_by_bank and loan.months_left > 0 for loan in user_loans)
-        has_completed = any(loan.is_verified_by_bank and loan.months_left == 0 for loan in user_loans)
+        has_pending = any(loan.status == 'PENDING' for loan in user_loans)
+        has_active = any(loan.status == 'APPROVED' and loan.months_left > 0 for loan in user_loans)
+        has_completed = any(loan.status == 'APPROVED' and loan.months_left == 0 for loan in user_loans)
 
         if has_pending:
             self.user.loan_status = 'PENDING'
         elif has_active:
             self.user.loan_status = 'ACTIVE'
         elif has_completed:
-            self.user.loan_status = 'NONE'
+            self.user.loan_status = 'COMPLETED'
         else:
             self.user.loan_status = 'NONE'
 
