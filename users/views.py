@@ -223,6 +223,8 @@ class FetchLoanDetailsView(APIView):
                 "months_left": loan.months_left,
                 "loan_term": loan.loan_term,
                 "status": loan.status,
+                "next_repayment_due_date": loan.next_repayment_due_date,
+                "repayment_status": loan.repayment_status,
                 "created_at": loan.created_at
             } for loan in loans
         ]

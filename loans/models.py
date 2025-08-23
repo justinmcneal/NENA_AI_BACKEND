@@ -2,6 +2,7 @@ from django.db import models
 from django.conf import settings
 import uuid
 from decimal import Decimal
+from datetime import date, timedelta
 
 class Loan(models.Model):
     STATUS_CHOICES = [
@@ -10,6 +11,11 @@ class Loan(models.Model):
         ('REJECTED', 'Rejected'),
         ('COMPLETED', 'Completed'),
     ]
+    REPAYMENT_STATUS_CHOICES = [
+        ('ON_TIME', 'On Time'),
+        ('OVERDUE', 'Overdue'),
+    ]
+
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="loans")
     loan_code = models.CharField(max_length=12, unique=True, editable=False)
     loaned_amount = models.DecimalField(max_digits=12, decimal_places=2)
@@ -20,6 +26,9 @@ class Loan(models.Model):
     monthly_income = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
     created_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PENDING')
+    next_repayment_due_date = models.DateField(null=True, blank=True)
+    repayment_status = models.CharField(max_length=20, choices=REPAYMENT_STATUS_CHOICES, default='ON_TIME')
+
 
     def save(self, *args, **kwargs):
         if not self.loan_code:
@@ -85,7 +94,12 @@ class Loan(models.Model):
             self.amount_payable = 0
             self.months_left = 0
             self.status = 'COMPLETED'
-        
+            self.next_repayment_due_date = None
+            self.repayment_status = 'ON_TIME'
+        else:
+            self.next_repayment_due_date += timedelta(days=30)
+            self.repayment_status = 'ON_TIME'
+
         Repayment.objects.create(loan=self, amount=amount)
         self.save()
 

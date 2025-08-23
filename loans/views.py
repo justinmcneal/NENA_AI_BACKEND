@@ -9,6 +9,7 @@ from .serializers import ApplyLoanSerializer
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib.admin.views.decorators import staff_member_required
 from django.views.decorators.http import require_POST
+from datetime import date, timedelta
 
 class ApplyLoanView(APIView):
     permission_classes = [IsAuthenticated]
@@ -41,6 +42,7 @@ def verify_loan(request, loan_id, action):
     loan = get_object_or_404(Loan, id=loan_id)
     if action == 'approve':
         loan.status = 'APPROVED'
+        loan.next_repayment_due_date = date.today() + timedelta(days=30)
     elif action == 'reject':
         loan.status = 'REJECTED'
     loan.save()

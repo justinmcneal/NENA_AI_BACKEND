@@ -16,6 +16,10 @@
         <p><strong>Monthly Income:</strong> {{ loan.monthly_income }}</p>
         <p><strong>Created At:</strong> {{ loan.created_at }}</p>
         <p><strong>Status:</strong> {{ loan.get_status_display }}</p>
+        {% if loan.status == 'APPROVED' %}
+        <p><strong>Next Repayment Due Date:</strong> {{ loan.next_repayment_due_date }}</p>
+        <p><strong>Repayment Status:</strong> {{ loan.get_repayment_status_display }}</p>
+        {% endif %}
         <div class="submit-row">
             {% if loan.status == 'PENDING' %}
             <a href="{% url 'verify_loan' loan.id 'approve' %}" class="button">Approve</a>
