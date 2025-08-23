@@ -15,7 +15,7 @@ class UserRequest(models.Model):
     submission_date = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Request by {self.user.username} - {self.request_type}"
+        return f"Request by {self.user.phone_number} - {self.request_type}"
 
 class Attachment(models.Model):
     user_request = models.ForeignKey(UserRequest, on_delete=models.CASCADE, related_name='attachments')
@@ -31,5 +31,18 @@ class UserDocument(models.Model):
     file = models.FileField(upload_to='user_documents/')
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
+    ANALYSIS_STATUS_CHOICES = [
+        ('PENDING', 'Pending Analysis'),
+        ('PROCESSING', 'Processing'),
+        ('VERIFIED', 'Verified'),
+        ('REJECTED', 'Rejected'),
+        ('UNREADABLE', 'Unreadable'),
+    ]
+    analysis_status = models.CharField(
+        max_length=20,
+        choices=ANALYSIS_STATUS_CHOICES,
+        default='PENDING',
+    )
+
     def __str__(self):
-        return f"{self.user.username} - {self.document_type}"
+        return f"{self.user.phone_number} - {self.document_type} ({self.analysis_status})"
