@@ -1,12 +1,14 @@
 from django.db import models
 from django.conf import settings
 import uuid
+from decimal import Decimal
 
 class Loan(models.Model):
     STATUS_CHOICES = [
         ('PENDING', 'Pending'),
         ('APPROVED', 'Approved'),
         ('REJECTED', 'Rejected'),
+        ('COMPLETED', 'Completed'),
     ]
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="loans")
     loan_code = models.CharField(max_length=12, unique=True, editable=False)
@@ -52,7 +54,7 @@ class Loan(models.Model):
         user_loans = self.user.loans.all()
         has_pending = any(loan.status == 'PENDING' for loan in user_loans)
         has_active = any(loan.status == 'APPROVED' and loan.months_left > 0 for loan in user_loans)
-        has_completed = any(loan.status == 'APPROVED' and loan.months_left == 0 for loan in user_loans)
+        has_completed = any(loan.status == 'COMPLETED' for loan in user_loans)
 
         if has_pending:
             self.user.loan_status = 'PENDING'
@@ -66,5 +68,34 @@ class Loan(models.Model):
         # Save the updated user loan_status
         self.user.save(update_fields=['income', 'loan_status'])
 
+    def add_repayment(self, amount):
+        if self.status != 'APPROVED':
+            raise Exception("Repayments can only be added to approved loans.")
+
+        amount = Decimal(amount)
+        self.amount_payable -= amount
+        
+        # Recalculate months_left
+        if self.monthly_repayment > 0:
+            self.months_left = int(self.amount_payable / self.monthly_repayment)
+        else:
+            self.months_left = 0
+
+        if self.amount_payable <= 0:
+            self.amount_payable = 0
+            self.months_left = 0
+            self.status = 'COMPLETED'
+        
+        Repayment.objects.create(loan=self, amount=amount)
+        self.save()
+
     def __str__(self):
         return f"{self.loan_code} ({self.user})"
+
+class Repayment(models.Model):
+    loan = models.ForeignKey(Loan, on_delete=models.CASCADE, related_name='repayments')
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    payment_date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Repayment of {self.amount} for loan {self.loan.loan_code}"

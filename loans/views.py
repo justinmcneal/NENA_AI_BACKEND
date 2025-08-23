@@ -8,6 +8,7 @@ from .models import Loan
 from .serializers import ApplyLoanSerializer
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib.admin.views.decorators import staff_member_required
+from django.views.decorators.http import require_POST
 
 class ApplyLoanView(APIView):
     permission_classes = [IsAuthenticated]
@@ -44,4 +45,17 @@ def verify_loan(request, loan_id, action):
         loan.status = 'REJECTED'
     loan.save()
     # Redirect back to the referring page.
+    return redirect(request.META.get('HTTP_REFERER', '/'))
+
+@staff_member_required
+@require_POST
+def add_repayment_view(request, loan_id):
+    loan = get_object_or_404(Loan, id=loan_id)
+    amount = request.POST.get('amount')
+    if amount:
+        try:
+            loan.add_repayment(amount)
+        except Exception as e:
+            # Handle exceptions, maybe with a message
+            pass
     return redirect(request.META.get('HTTP_REFERER', '/'))
