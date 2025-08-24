@@ -1,59 +1,76 @@
 {% extends 'admin/base_site.html' %}
 
+{% block extrahead %}
+<style>
+    /* Custom styles for dashboard modules and charts */
+    .module {
+        background-color: #f8f8f8; /* Light background for modules */
+        border: 1px solid #e0e0e0; /* Subtle border */
+        border-radius: 5px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05); /* Soft shadow */
+        margin: 0 auto 20px auto; /* Center the module horizontally */
+    }
+
+    .module h2 {
+        color: black; /* Set h2 text color to black */
+        margin-top: 0;
+        margin-bottom: 15px;
+        font-size: 1.2em;
+    }
+
+    .module p {
+        color: black; /* Set p text color to black */
+    }
+     .module a{
+        font-weight: bold;
+    }
+    .module a:hover{
+        text-decoration: underline;
+    }
+    /* Chart specific styling */
+    .chart-container { /* New class for the div wrapping canvas */
+        max-width: 600px;
+        margin: 0 auto; /* Center the chart within its module */
+    }
+
+    canvas {
+        background-color: #fff; /* White background for charts */
+        border-radius: 3px;
+        padding: 10px;
+    }
+
+    /* Ensure chart labels are visible on light background */
+    .chartjs-render-monitor {
+        color: #333; /* Dark text for chart labels */
+    }
+    h2{
+        color: black;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div id="content-main">
-   
     <div class="module">
-        <h2>Overall User Statistics</h2>
-        <p>Total Users: <strong>{{ total_users }}</strong></p>
+        <h2>Total Loan Amount</h2>
+        <div class="chart-container"><canvas id="totalLoanAmountChart"></canvas></div>
     </div>
 
     <div class="module">
-        <h2>Users by Verification Status</h2>
-        <table style="width: 50%;">
-            <thead>
-                <tr>
-                    <th>Status</th>
-                    <th>Count</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for status in users_by_verification_status %}
-                <tr>
-                    <td>{{ status.verification_status }}</td>
-                    <td>{{ status.count }}</td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="2">No data available.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <h2>Total Amount Repaid</h2>
+        <div class="chart-container"><canvas id="totalAmountRepaidChart"></canvas></div>
     </div>
 
     <div class="module">
-        <h2>Users by Loan Status</h2>
-        <table style="width: 50%;">
-            <thead>
-                <tr>
-                    <th>Status</th>
-                    <th>Count</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for status in users_by_loan_status %}
-                <tr>
-                    <td>{{ status.loan_status }}</td>
-                    <td>{{ status.count }}</td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="2">No data available.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <h2>Average Monthly Income</h2>
+        <div class="chart-container"><canvas id="averageMonthlyIncomeChart"></canvas></div>
+    </div>
+
+    <div class="module">
+        <h2>Business Consistency Score</h2>
+        <div class="chart-container"><canvas id="businessConsistencyScoreChart"></canvas></div>
     </div>
 
     <div class="module">
@@ -61,4 +78,191 @@
         <p>Click <a href="{% url 'admin:users_customuser_changelist' %}">here</a> to view the full user data table.</p>
     </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        fetch('/api/analytics/user/')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Total Loan Amount Chart
+            new Chart(document.getElementById('totalLoanAmountChart').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: ['Total Loan Amount'],
+                    datasets: [{
+                        label: 'Amount',
+                        data: [data.total_loan_amount],
+                        backgroundColor: 'rgba(255, 99, 132, 0.6)', /* Red */
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                color: '#333' /* Darker ticks for light theme */
+                            },
+                            grid: {
+                                color: '#e0e0e0' /* Light grid lines */
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: '#333' /* Darker ticks for light theme */
+                            },
+                            grid: {
+                                color: '#e0e0e0' /* Light grid lines */
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#333' /* Darker legend labels */
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Total Amount Repaid Chart
+            new Chart(document.getElementById('totalAmountRepaidChart').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: ['Total Amount Repaid'],
+                    datasets: [{
+                        label: 'Amount',
+                        data: [data.total_amount_repaid],
+                        backgroundColor: 'rgba(54, 162, 235, 0.6)', /* Blue */
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                color: '#333'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: '#333'
+                            },
+                            grid: {
+                                color: '#e0e0e0'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#333'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Average Monthly Income Chart
+            new Chart(document.getElementById('averageMonthlyIncomeChart').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: ['Average Monthly Income'],
+                    datasets: [{
+                        label: 'Income',
+                        data: [data.average_monthly_income],
+                        backgroundColor: 'rgba(75, 192, 192, 0.6)', /* Green */
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                color: '#333'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: '#333'
+                            },
+                            grid: {
+                                color: '#e0e0e0'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#333'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Business Consistency Score Chart
+            new Chart(document.getElementById('businessConsistencyScoreChart').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: ['Business Consistency Score'],
+                    datasets: [{
+                        label: 'Score',
+                        data: [data.business_consistency_score],
+                        backgroundColor: 'rgba(153, 102, 255, 0.6)', /* Purple */
+                        borderColor: 'rgba(153, 102, 255, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 1.0, // Score is from 0.0 to 1.0
+                            ticks: {
+                                color: '#333'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: '#333'
+                            },
+                            grid: {
+                                color: '#e0e0e0'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#333'
+                            }
+                        }
+                    }
+                }
+            });
+        })
+        .catch(error => {
+            console.error('Error fetching user analytics:', error);
+            const chartContainer = document.getElementById('totalLoanAmountChart').parentNode.parentNode; // Get the main container
+            chartContainer.innerHTML = '<p>Error loading analytics data. Please ensure you are logged in and the API is accessible.</p>';
+        });
+    });
+</script>
 {% endblock %}

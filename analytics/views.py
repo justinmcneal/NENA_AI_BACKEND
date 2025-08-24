@@ -2,6 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, generics
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.authentication import SessionAuthentication, TokenAuthentication # Import authentication classes
 from .models import UserAnalytics, IncomeRecord
 from .serializers import UserAnalyticsSerializer, IncomeRecordSerializer
 from django.db.models import Sum
@@ -11,6 +12,7 @@ class UserAnalyticsView(APIView):
     """
     API view to retrieve analytics for the authenticated user.
     """
+    authentication_classes = [SessionAuthentication, TokenAuthentication] # Add SessionAuthentication
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -21,7 +23,7 @@ class UserAnalyticsView(APIView):
         analytics, created = UserAnalytics.objects.get_or_create(user=request.user)
 
         # --- Calculate and update analytics ---
-        user_loans = request.user.loans.filter(is_verified_by_bank=True)
+        user_loans = request.user.loans.filter(status='APPROVED')
 
         # Calculate total loaned amount
         total_loaned = user_loans.aggregate(total=Sum('loaned_amount'))['total'] or 0
