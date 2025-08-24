@@ -23,12 +23,7 @@
     .module p {
         color: black; /* Set p text color to black */
     }
-     .module a{
-        font-weight: bold;
-    }
-    .module a:hover{
-        text-decoration: underline;
-    }
+
     /* Chart specific styling */
     .chart-container { /* New class for the div wrapping canvas */
         max-width: 600px;
@@ -44,9 +39,6 @@
     /* Ensure chart labels are visible on light background */
     .chartjs-render-monitor {
         color: #333; /* Dark text for chart labels */
-    }
-    h2{
-        color: black;
     }
 </style>
 {% endblock %}
@@ -107,27 +99,16 @@
                     responsive: true,
                     scales: {
                         y: {
-                            beginAtZero: true,
-                            ticks: {
-                                color: '#333' /* Darker ticks for light theme */
-                            },
-                            grid: {
-                                color: '#e0e0e0' /* Light grid lines */
-                            }
+                            beginAtZero: true
                         },
                         x: {
-                            ticks: {
-                                color: '#333' /* Darker ticks for light theme */
-                            },
-                            grid: {
-                                color: '#e0e0e0' /* Light grid lines */
-                            }
+                            // No specific x-axis options needed for single bar
                         }
                     },
                     plugins: {
                         legend: {
                             labels: {
-                                color: '#333' /* Darker legend labels */
+                                color: '#333'
                             }
                         }
                     }
@@ -151,18 +132,10 @@
                     responsive: true,
                     scales: {
                         y: {
-                            beginAtZero: true,
-                            ticks: {
-                                color: '#333'
-                            }
+                            beginAtZero: true
                         },
                         x: {
-                            ticks: {
-                                color: '#333'
-                            },
-                            grid: {
-                                color: '#e0e0e0'
-                            }
+                            // No specific x-axis options needed for single bar
                         }
                     },
                     plugins: {
@@ -192,18 +165,10 @@
                     responsive: true,
                     scales: {
                         y: {
-                            beginAtZero: true,
-                            ticks: {
-                                color: '#333'
-                            }
+                            beginAtZero: true
                         },
                         x: {
-                            ticks: {
-                                color: '#333'
-                            },
-                            grid: {
-                                color: '#e0e0e0'
-                            }
+                            // No specific x-axis options needed for single bar
                         }
                     },
                     plugins: {
@@ -234,18 +199,10 @@
                     scales: {
                         y: {
                             beginAtZero: true,
-                            max: 1.0, // Score is from 0.0 to 1.0
-                            ticks: {
-                                color: '#333'
-                            }
+                            max: 1.0 // Score is from 0.0 to 1.0
                         },
                         x: {
-                            ticks: {
-                                color: '#333'
-                            },
-                            grid: {
-                                color: '#e0e0e0'
-                            }
+                            // No specific x-axis options needed for single bar
                         }
                     },
                     plugins: {
