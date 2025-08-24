@@ -4,7 +4,7 @@ from django.core.files.base import ContentFile
 
 # Get or create a user
 user, created = CustomUser.objects.get_or_create(
-    phone_number='1234567890',
+    phone_number='9123456789',
     defaults={
         'email': 'testuser@example.com',
         'username': 'testuser',
