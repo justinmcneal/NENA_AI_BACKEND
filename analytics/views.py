@@ -1,12 +1,20 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, generics
+from django.db.models import Sum, Avg
+from rest_framework.views import APIView
+from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+<<<<<<< Updated upstream
 from rest_framework.authentication import SessionAuthentication, TokenAuthentication # Import authentication classes
+=======
+from rest_framework import status
+from datetime import date, timedelta
+>>>>>>> Stashed changes
 from .models import UserAnalytics, IncomeRecord
+from loans.models import Loan  # adjust import if your Loan model is elsewhere
 from .serializers import UserAnalyticsSerializer, IncomeRecordSerializer
-from django.db.models import Sum
-from datetime import date, timedelta # Import date and timedelta
+
 
 class UserAnalyticsView(APIView):
     """
@@ -23,13 +31,19 @@ class UserAnalyticsView(APIView):
         analytics, created = UserAnalytics.objects.get_or_create(user=request.user)
 
         # --- Calculate and update analytics ---
+<<<<<<< Updated upstream
         user_loans = request.user.loans.filter(status='APPROVED')
+=======
+        user_loans = request.user.loans.filter(status__iexact="approved") | request.user.loans.filter(
+            status__iexact="completed"
+        )
+>>>>>>> Stashed changes
 
-        # Calculate total loaned amount
-        total_loaned = user_loans.aggregate(total=Sum('loaned_amount'))['total'] or 0
+        # 1. Total loaned amount
+        total_loaned = user_loans.aggregate(total=Sum("loaned_amount"))["total"] or 0
         analytics.total_loan_amount = total_loaned
 
-        # Calculate total amount repaid
+        # 2. Total amount repaid
         total_repaid = 0
         for loan in user_loans:
             repayments_made = loan.loan_term - loan.months_left
@@ -37,53 +51,35 @@ class UserAnalyticsView(APIView):
                 total_repaid += repayments_made * loan.monthly_repayment
         analytics.total_amount_repaid = total_repaid
 
-        # Calculate average monthly income and business consistency score
-        income_records = IncomeRecord.objects.filter(user=request.user).order_by('record_date')
 
-        if income_records.exists():
-            total_income_sum = income_records.aggregate(total=Sum('amount'))['total']
-            min_date = income_records.first().record_date
-            max_date = income_records.last().record_date
+        user_monthly_income_loans = Loan.objects.filter(user=request.user).values_list(
+            "monthly_income", flat=True
+        )
 
-            # Calculate number of months covered by records
-            num_months_covered = (max_date.year - min_date.year) * 12 + (max_date.month - min_date.month) + 1
-            if num_months_covered == 0: # Should not happen if records exist, but for safety
-                num_months_covered = 1
+        submitted_income_avg = (
+            user_monthly_income_loans.aggregate(avg=Avg("monthly_income"))["avg"]
+            if user_monthly_income_loans.exists()
+            else 0
+        )
 
-            analytics.average_monthly_income = total_income_sum / num_months_covered
+        analytics.average_monthly_income = submitted_income_avg or 0.0
 
-            # Business Consistency Score (last 3 months)
-            today = date.today()
-            three_months_ago = today - timedelta(days=90)
-            
-            recent_income_records = income_records.filter(record_date__gte=three_months_ago)
-            
-            distinct_months_with_records = set()
-            for record in recent_income_records:
-                distinct_months_with_records.add((record.record_date.year, record.record_date.month))
-            
-            # Calculate total possible months in the last 3 months
-            total_possible_months = 0
-            current_month = today.month
-            current_year = today.year
-            for _ in range(3): # Check for 3 months
-                total_possible_months += 1
-                current_month -= 1
-                if current_month == 0: # Handle year rollover
-                    current_month = 12
-                    current_year -= 1
+        # 2. Business Consistency Score (based only on loan monthly_income submissions)
+        # ------------------------------------
+        if user_monthly_income_loans.exists():
+            # Treat consistency as how many distinct "monthly_income" values exist
+            # compared to total loans submitted.
+            distinct_income_values = len(set(user_monthly_income_loans))
+            total_loans = user_monthly_income_loans.count()
 
-            if total_possible_months > 0:
-                analytics.business_consistency_score = len(distinct_months_with_records) / total_possible_months
-            else:
-                analytics.business_consistency_score = 0.0
-
+            analytics.business_consistency_score = (
+                distinct_income_values / total_loans if total_loans > 0 else 0.0
+            )
         else:
-            analytics.average_monthly_income = 0.00
             analytics.business_consistency_score = 0.0
 
+        # --- Save analytics ---
         analytics.save()
-        # ------------------------------------
 
         serializer = UserAnalyticsSerializer(analytics)
         return Response(serializer.data, status=status.HTTP_200_OK)
