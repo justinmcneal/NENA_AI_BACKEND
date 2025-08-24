@@ -1,23 +1,24 @@
 import torch
 import torchvision.transforms as transforms
+import torchvision.models as models # Import models
 from PIL import Image
 import io
 
-# Placeholder for a pre-trained model (e.g., ResNet18)
-# In a real scenario, you would load your fine-tuned model here.
-# For demonstration, we'll simulate a simple classification.
+# Global model instance (load once)
+_model = None # Initialize as None
 
 def load_model():
-    # This is a placeholder. Replace with actual model loading.
-    # Example: model = torchvision.models.resnet18(pretrained=False)
-    # model.fc = torch.nn.Linear(model.fc.in_features, num_classes)
-    # model.load_state_dict(torch.load('path/to/your/model.pth'))
-    # model.eval()
-    print("Simulating model loading...")
-    return True # Simulate a loaded model
+    global _model
+    if _model is None:
+        print("Loading pre-trained ResNet18 model...")
+        # Load a pre-trained ResNet18 model
+        _model = models.resnet18(pretrained=True)
+        _model.eval() # Set the model to evaluation mode
+        print("ResNet18 model loaded.")
+    return _model
 
-# Global model instance (load once)
-_model = load_model()
+# Load the model when the module is imported
+load_model()
 
 def preprocess_image(image_file):
     # Define transformations for the model
@@ -29,43 +30,45 @@ def preprocess_image(image_file):
     ])
     
     # Open the image file using PIL
+    # image_file is a Django InMemoryUploadedFile, it needs to be read
     img = Image.open(io.BytesIO(image_file.read())).convert('RGB')
     return preprocess(img).unsqueeze(0) # Add batch dimension
 
 def analyze_document(document_file):
     """
-    Simulates AI analysis of a document.
+    Performs actual (basic) AI analysis of a document using a pre-trained model.
     Returns a tuple: (analysis_status, extracted_data_dict)
     """
-    if not _model:
-        return 'REJECTED', {'reason': 'Model not loaded'}
+    if _model is None:
+        return 'REJECTED', {'reason': 'AI model not loaded'}
 
     try:
-        # Simulate image preprocessing and model inference
-        # input_tensor = preprocess_image(document_file)
-        # with torch.no_grad():
-        #     output = _model(input_tensor)
-        #     # Simulate classification result
-        #     _, predicted_idx = torch.max(output, 1)
-        #     # Map predicted_idx to a status (e.g., 0: VERIFIED, 1: REJECTED, 2: UNREADABLE)
+        input_tensor = preprocess_image(document_file)
         
-        # For now, simulate based on file size or type for demonstration
-        file_size = document_file.size # Access size from InMemoryUploadedFile
-        file_name = document_file.name
+        with torch.no_grad():
+            output = _model(input_tensor)
+            probabilities = torch.nn.functional.softmax(output[0], dim=0)
+            
+            # Get the top prediction and its confidence
+            confidence, predicted_idx = torch.max(probabilities, 0)
+            confidence = confidence.item() # Convert tensor to Python float
 
-        if "id_front" in file_name.lower() or "id_back" in file_name.lower():
-            if file_size > 100 * 1024: # Simulate a reasonable size for a clear ID
-                return 'VERIFIED', {'type': 'ID', 'confidence': 0.95, 'extracted_text': 'Simulated ID text'}
-            else:
-                return 'UNREADABLE', {'type': 'ID', 'confidence': 0.3, 'reason': 'Simulated low quality'}
-        elif "receipt" in file_name.lower():
-            if file_size > 50 * 1024:
-                return 'VERIFIED', {'type': 'RECEIPT', 'confidence': 0.8, 'extracted_amount': 123.45}
-            else:
-                return 'UNREADABLE', {'type': 'RECEIPT', 'confidence': 0.2, 'reason': 'Simulated low quality'}
-        else:
-            return 'PENDING', {'type': 'UNKNOWN', 'confidence': 0.5}
+            # Simulate status based on confidence
+            if confidence > 0.7: # High confidence, likely readable
+                status = 'VERIFIED'
+                reason = 'High confidence classification'
+            elif confidence > 0.4: # Medium confidence, might be readable but uncertain
+                status = 'PENDING'
+                reason = 'Medium confidence, requires review'
+            else: # Low confidence, likely unreadable or not what's expected
+                status = 'UNREADABLE'
+                reason = 'Low confidence classification'
+
+            # For a real ID/receipt classification, you'd map predicted_idx to your custom classes
+            # For this MVP, we're using confidence as a proxy for "validity/readability"
+            
+            return status, {'confidence': confidence, 'reason': reason}
 
     except Exception as e:
-        print(f"Error during document analysis simulation: {e}")
+        print(f"Error during document analysis: {e}")
         return 'REJECTED', {'reason': f'Analysis failed: {str(e)}'}
