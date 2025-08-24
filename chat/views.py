@@ -78,7 +78,7 @@ class ChatView(APIView):
             # Generate a response using the loaded language model
             try:
                 inputs = TOKENIZER.encode_plus(prompt, return_tensors='pt', padding=True)
-                outputs = MODEL.generate(inputs['input_ids'], attention_mask=inputs['attention_mask'], max_new_tokens=10, num_return_sequences=1)
+                outputs = MODEL.generate(inputs['input_ids'], attention_mask=inputs['attention_mask'], max_new_tokens=10, num_return_sequences=1) #PWEDE NYO ITAAS UNG MAX NEW TOKENS TO 100
                 ai_reply = TOKENIZER.decode(outputs[0], skip_special_tokens=True)
             except Exception as e:
                 ai_reply = f"Sorry, I encountered an error: {e}"
