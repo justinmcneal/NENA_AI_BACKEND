@@ -79,14 +79,14 @@ class ChatView(APIView):
                 inputs = TOKENIZER.encode_plus(prompt, return_tensors='pt', padding=True)
                 outputs = MODEL.generate(inputs['input_ids'], attention_mask=inputs['attention_mask'], max_new_tokens=100, num_return_sequences=1)
                 raw_ai_reply = TOKENIZER.decode(outputs[0], skip_special_tokens=True)
-                
-                # Extract only the answer part
+                # Extract only the answer part, using the last occurrence of 'Answer:'
                 answer_prefix = "Answer:"
                 if answer_prefix in raw_ai_reply:
-                    ai_reply = raw_ai_reply.split(answer_prefix, 1)[1].strip()
+                    ai_reply = raw_ai_reply.rsplit(answer_prefix, 1)[-1].strip()
                 else:
-                    ai_reply = raw_ai_reply.strip() # Fallback if prefix not found
-
+                    ai_reply = raw_ai_reply.strip()
+                # Remove excessive newlines and spaces
+                ai_reply = " ".join(ai_reply.split())
             except Exception as e:
                 ai_reply = f"Sorry, I encountered an error: {e}"
             # --------------------------
