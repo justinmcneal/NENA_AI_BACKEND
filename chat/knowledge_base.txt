@@ -1,17 +1,16 @@
-
 [BPI Loan Products]
-
 Product Name: BanKo
 Description: A microfinance loan product from BPI designed for self-employed micro-entrepreneurs (SEMEs). It offers affordable and accessible financing to help grow small businesses.
 Interest Rate: As low as 2.3% per month.
 Loanable Amount: From PHP 25,000 up to PHP 300,000.
 Repayment Terms: 12, 18, or 24 months.
 Requirements:
-- Filipino citizen, 21-60 years old.
-- Business has been operating for at least 1 year.
-- Valid ID (e.g., UMID, Driver's License, Passport).
-- Business Permit or Barangay Permit.
-- Proof of income (e.g., sales records, receipts).
+
+Filipino citizen, 21-60 years old.
+Business has been operating for at least 1 year.
+Valid ID (e.g., UMID, Driver's License, Passport).
+Business Permit or Barangay Permit.
+Proof of income (e.g., sales records, receipts).
 
 Product Name: NegosyoKo
 Description: A loan program for small and medium enterprises (SMEs) that need capital for expansion, new equipment, or additional inventory.
@@ -19,22 +18,135 @@ Interest Rate: Varies depending on the loan amount and term.
 Loanable Amount: Starts at PHP 300,000.
 Repayment Terms: Flexible, up to 5 years.
 Requirements:
-- Registered business (sole proprietorship, partnership, or corporation).
-- Business has been profitable for at least 2 years.
-- Audited Financial Statements.
-- Bank Statements for the last 6 months.
-- Business Permits and Licenses.
+
+Registered business (sole proprietorship, partnership, or corporation).
+Business has been profitable for at least 2 years.
+Audited Financial Statements.
+Bank Statements for the last 6 months.
+Business Permits and Licenses.
+
+Product Name: NegosyoKo Lite
+Description: A quick cash boost for small businesses under BanKo, ideal for covering unexpected expenses, upgrading equipment, or purchasing inventory.
+Interest Rate: Competitive (specific not disclosed; comparable to NegosyoKo's 2.3-2.75% monthly add-on).
+Loanable Amount: PHP 5,000 to PHP 15,000.
+Repayment Terms: Flexible, aligned with business cash flow (weekly, bi-monthly, or monthly).
+Requirements:
+
+Filipino citizen, 21-60 years old.
+Business operating for at least 1 year.
+Valid ID and basic business proof (e.g., sales records).
+
+Product Name: InstaCashKo Loan
+Description: BanKo's personal loan for salaried individuals, providing quick funds for emergencies, projects, or financial needs.
+Interest Rate: Competitive (up to 5% monthly add-on, effective ACR up to 90.95% depending on term).
+Loanable Amount: PHP 2,000 to PHP 250,000.
+Repayment Terms: 7 days to 36 months.
+Requirements:
+
+Employed Filipino with gross monthly income of at least PHP 12,000.
+Valid ID and proof of income (e.g., payslips).
+
+Product Name: Personal Loan
+Description: Multi-purpose cash loan for personal needs like education, travel, or consolidation, with fast processing.
+Interest Rate: 1.2% monthly add-on (effective ACR 28.67%).
+Loanable Amount: PHP 20,000 to PHP 3,000,000.
+Repayment Terms: 12 to 36 months.
+Requirements:
+
+Filipino citizen, 21-60 years old.
+Employed or self-employed with minimum income of PHP 25,000.
+Valid ID, latest payslips/ITR, and proof of billing.
+
+Product Name: Housing Loan
+Description: Financing for buying, building, or renovating a home, with options for property equity or sustainable upgrades.
+Interest Rate: As low as 6.70% p.a. fixed for 5 years.
+Loanable Amount: PHP 400,000 to 90% of property value.
+Repayment Terms: 1 to 20 years.
+Requirements:
+
+Filipino citizen, 18-70 years old upon maturity.
+Minimum household income PHP 40,000.
+Valid IDs, income proof (ITR/AFS), property documents (title, tax declaration).
+
+Product Name: Auto Loan
+Description: Financing for new or used vehicles, including electric/hybrid options, with promo perks like free insurance.
+Interest Rate: 4.77% to 27.28% effective annual for new; higher for used (varies by term).
+Loanable Amount: PHP 200,000 to 85% for new/70% for used.
+Repayment Terms: 1 to 7 years.
+Requirements:
+
+Filipino citizen, 18-70 years old upon maturity.
+Minimum household income PHP 30,000.
+Valid ID, income proof, vehicle details from dealer.
+
+Product Name: Motorsiklo Loan
+Description: Affordable financing for motorcycles, including regular, second-hand, or TODA units.
+Interest Rate: 2.43% to 2.88% monthly (effective similar to auto loans).
+Loanable Amount: Up to PHP 300,000 (or PHP 1.5M for mid-range).
+Repayment Terms: 12 to 48 months.
+Requirements:
+
+Filipino citizen, 21-60 years old.
+Employed/self-employed with stable income.
+Valid ID, proof of residence/income, dealer quote.
+
+Product Name: Ka-Negosyo SME Loan
+Description: Term loan for SMEs to fund working capital, equipment, or expansion (with or without collateral).
+Interest Rate: Varies (competitive, not specified; lower for repeat loans).
+Loanable Amount: Minimum PHP 300,000.
+Repayment Terms: Up to 5 years.
+Requirements:
+
+Business operating for at least 3 years.
+Filipino-owned, 1-year residency.
+DTI/SEC registration, IDs, bank statements, ITR/AFS.
+
+Product Name: Ka-Negosyo Ready Loan
+Description: Short-term loan for seasonal business needs like inventory during peaks.
+Interest Rate: Lower for succeeding loans (specific not disclosed).
+Loanable Amount: Minimum PHP 300,000.
+Repayment Terms: Up to 6 months.
+Requirements:
+
+Same as SME Loan (3 years operation, etc.).
+No collateral required.
+
+Product Name: Ka-Negosyo Credit Line
+Description: Revolving credit for on-demand financing of business expenses like inventory or payments.
+Interest Rate: Charged only on used amount (varies).
+Loanable Amount: Based on approval (starts at PHP 300,000).
+Repayment Terms: Flexible, renews annually.
+Requirements:
+
+Business 3+ years profitable.
+Registration, financial statements, bank records.
 
 [Frequently Asked Questions (FAQs)]
-
 Question: Safe ba ako dito? (Is it safe for me here?)
 Answer: Oo, safe ka dito. Ang NENA AI ay isang opisyal na platform ng BPI. Ang iyong impormasyon ay protektado at ginagamit lamang para sa iyong loan application. (Yes, you are safe here. NENA AI is an official BPI platform. Your information is protected and used only for your loan application.)
-
 Question: Paano mag-apply? (How to apply?)
 Answer: Madali lang mag-apply. Una, sagutin mo ang ilang tanong mula sa akin para malaman natin kung anong loan ang bagay sa iyo. Pagkatapos, tutulungan kitang ihanda ang mga kailangan mong dokumento. (It's easy to apply. First, answer a few questions from me so we can determine which loan is right for you. After that, I will help you prepare the necessary documents.)
-
 Question: Anong kailangan? (What is needed?)
 Answer: Ang mga kailangan ay depende sa loan na iyong aapplyan. Karaniwan, kailangan mo ng valid ID, business permit, at patunay ng iyong kita. Huwag kang mag-alala, gagabayan kita sa bawat hakbang. (The requirements depend on the loan you are applying for. Usually, you need a valid ID, business permit, and proof of your income. Don't worry, I will guide you through every step.)
-
 Question: Pwede ba sa walang bangko? (Is it possible for someone without a bank account?)
 Answer: Oo, ang NENA AI ay dinisenyo para tulungan ang mga tulad mo na walang bank account. Kung maaprubahan ang iyong loan, tutulungan ka naming mag-set up ng iyong BPI account. (Yes, NENA AI is designed to help people like you who don't have a bank account. If your loan is approved, we will help you set up your BPI account.)
+Question: Ano ang interest rate para sa personal loan? (What is the interest rate for a personal loan?)
+Answer: Ang interest rate ay 1.2% monthly add-on, na may effective ACR ng 28.67%. Ito ay maaaring mag-iba batay sa term at profile mo. (The interest rate is 1.2% monthly add-on, with effective ACR of 28.67%. It may vary based on term and profile.)
+Question: Paano kung may existing loan ako, pwede ba mag-apply ulit? (If I have an existing loan, can I apply again?)
+Answer: Inirerekomenda na mag-apply ka ulit kapag nabayaran mo na ang kalahati ng iyong existing loan para sa mas magandang approval chance. (It is recommended to apply again once you've paid at least half of your existing loan for better approval chances.)
+Question: Ano ang kailangan para sa salary loan? (What is needed for a salary loan?)
+Answer: Valid ID o company ID, latest 3 payslips o ITR, at certificate of employment. Madali at minimal lang. (Valid ID or company ID, latest 3 payslips or ITR, and certificate of employment. Easy and minimal.)
+Question: Pwede ba mag-apply online gamit ang NENA AI? (Can I apply online using NENA AI?)
+Answer: Oo, sagutin ang mga tanong sa NENA AI para matukoy ang tamang loan, then ihanda ang documents online o sa branch. (Yes, answer questions on NENA AI to determine the right loan, then prepare documents online or at a branch.)
+Question: Safe ba ang data ko sa NENA AI? (Is my data safe on NENA AI?)
+Answer: Oo, ang NENA AI ay opisyal na BPI platform; protektado ang data mo at ginagamit lamang para sa loan. (Yes, NENA AI is an official BPI platform; your data is protected and used only for the loan.)
+Question: Ano ang proseso para sa housing loan application? (What is the process for housing loan application?)
+Answer: Sagutin ang self-assessment online, submit docs sa branch o via NENA AI, then wait for approval (1-4 weeks). Gamitin ang calculator para sa estimates. (Answer self-assessment online, submit docs at branch or via NENA AI, then await approval (1-4 weeks). Use the calculator for estimates.)
+Question: Pwede ba mag-apply kung walang collateral? (Can I apply without collateral?)
+Answer: Oo, para sa ilang products tulad ng Personal o Ka-Negosyo Ready Loan, pero maaaring mas mataas ang interest. (Yes, for some like Personal or Ka-Negosyo Ready Loan, but interest may be higher.)
+Question: Ano ang mangyayari kung late ang payment? (What happens if payment is late?)
+Answer: May 5% penalty sa unpaid amount monthly; iwasan para mapanatili ang good credit. (5% penalty on unpaid amount monthly; avoid to maintain good credit.)
+Question: Paano i-compute ang loan amount? (How to compute loan amount?)
+Answer: Gamitin ang BPI calculators online; halimbawa, para sa personal loan, base sa income at term. (Use BPI online calculators; e.g., for personal loan, based on income and term.)
+Question: Safe ba ang online application? (Is online application safe?)
+Answer: Oo, protektado ng BPI's data privacy; gamitin lamang official apps tulad ng NENA AI. (Yes, protected by BPI's data privacy; use only official apps like NENA AI.)

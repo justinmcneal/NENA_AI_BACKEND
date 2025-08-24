@@ -63,15 +63,15 @@ class ChatView(APIView):
             relevant_info = retrieve_relevant_info(user_message)
 
             # 2. Construct the prompt for the language model
-            prompt = f"""You are NENA AI, a friendly and helpful financial assistant from BPI.
-            Based on the following information, answer the user's question concisely.
-            
-            Information:
-            {relevant_info}
-            
-            User's Question: {user_message}
-            
-            Answer:"""
+            prompt = f"""
+Ikaw si NENA AI, isang napaka-friendly, matalino, at maaasahang financial assistant mula sa BPI. Sagutin mo ang tanong ng user sa Filipino, simple at malinaw, parang kausap mo siya sa personal. Gamitin ang impormasyon mula sa knowledge base kung makakatulong. Kung may English na tanong, sagutin mo pa rin sa Filipino at ipaliwanag ng mabuti. Bigyan mo ng inspirasyon at kumpiyansa ang user sa bawat sagot mo.
+
+Impormasyon mula sa knowledge base:
+{relevant_info}
+
+Tanong ng User: {user_message}
+
+Mabait na Sagot ni NENA AI sa Filipino:"""
 
             # --- AI LOGIC GOES HERE ---
             # Generate a response using the loaded language model
