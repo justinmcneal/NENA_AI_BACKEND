@@ -64,8 +64,7 @@ class ChatView(APIView):
 
             # 2. Construct the prompt for the language model
             prompt = f"""You are NENA AI, a friendly and helpful financial assistant from BPI.
-            Answer the user's question based on the following information.
-            Keep your answer concise and easy to understand.
+            Based on the following information, answer the user's question concisely.
             
             Information:
             {relevant_info}
@@ -78,8 +77,16 @@ class ChatView(APIView):
             # Generate a response using the loaded language model
             try:
                 inputs = TOKENIZER.encode_plus(prompt, return_tensors='pt', padding=True)
-                outputs = MODEL.generate(inputs['input_ids'], attention_mask=inputs['attention_mask'], max_new_tokens=10, num_return_sequences=1) #PWEDE NYO ITAAS UNG MAX NEW TOKENS TO 100
-                ai_reply = TOKENIZER.decode(outputs[0], skip_special_tokens=True)
+                outputs = MODEL.generate(inputs['input_ids'], attention_mask=inputs['attention_mask'], max_new_tokens=100, num_return_sequences=1)
+                raw_ai_reply = TOKENIZER.decode(outputs[0], skip_special_tokens=True)
+                
+                # Extract only the answer part
+                answer_prefix = "Answer:"
+                if answer_prefix in raw_ai_reply:
+                    ai_reply = raw_ai_reply.split(answer_prefix, 1)[1].strip()
+                else:
+                    ai_reply = raw_ai_reply.strip() # Fallback if prefix not found
+
             except Exception as e:
                 ai_reply = f"Sorry, I encountered an error: {e}"
             # --------------------------
