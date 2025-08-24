@@ -52,20 +52,64 @@ KNOWLEDGE_BASE = load_knowledge_base()
 
 # --- Simple Retriever ---
 def retrieve_relevant_info(query):
-    """A simple keyword-based retriever to find relevant info from the knowledge base."""
-    # Simple FAQ retrieval: look for a matching question in the knowledge base
-    lines = KNOWLEDGE_BASE.splitlines()
+    """
+    Retrieves relevant information from the knowledge base.
+    1. Tries to find an exact match for a question in the FAQ section.
+    2. If no FAQ match, searches for a product name in the query.
+    3. If no product match, returns an empty string.
+    """
     query_lower = query.strip().lower()
-    answer = ""
+    lines = KNOWLEDGE_BASE.splitlines()
+    
+    # 1. FAQ Retrieval
+    in_faq_section = False
     for i, line in enumerate(lines):
-        if line.lower().startswith("question:"):
-            question_text = line.split("Question:", 1)[-1].strip().lower()
-            if query_lower in question_text or question_text in query_lower:
-                # Look for the next line that starts with 'Answer:'
-                for j in range(i+1, min(i+5, len(lines))):
-                    if lines[j].lower().startswith("answer:"):
-                        answer = lines[j].split("Answer:", 1)[-1].strip()
-                        return answer
+        if "[frequently asked questions (faqs)]" in line.lower():
+            in_faq_section = True
+            continue
+        if in_faq_section:
+            if line.lower().startswith("question:"):
+                question_text = line.split("Question:", 1)[-1].strip().lower()
+                if query_lower == question_text:
+                    # Found an exact match, return the answer
+                    for j in range(i + 1, len(lines)):
+                        if lines[j].lower().startswith("answer:"):
+                            return lines[j].split("Answer:", 1)[-1].strip()
+    
+    # 2. Product Retrieval
+    in_product_section = False
+    product_info_lines = []
+    for i, line in enumerate(lines):
+        if "[bpi loan products]" in line.lower():
+            in_product_section = True
+            continue
+        if "[frequently asked questions (faqs)]" in line.lower():
+            in_product_section = False
+            break
+        if in_product_section:
+            product_info_lines.append(line)
+
+    # Split product info into individual products
+    products = []
+    current_product = []
+    for line in product_info_lines:
+        if line.lower().startswith("product name:") and current_product:
+            products.append("\n".join(current_product))
+            current_product = [line]
+        else:
+            current_product.append(line)
+    if current_product:
+        products.append("\n".join(current_product))
+
+    for product in products:
+        product_lines = product.splitlines()
+        if product_lines:
+            product_name_line = product_lines[0]
+            if product_name_line.lower().startswith("product name:"):
+                product_name = product_name_line.split("Product Name:", 1)[-1].strip().lower()
+                if product_name in query_lower:
+                    return product
+
     return ""
 
 class ChatView(APIView):
@@ -75,28 +119,34 @@ class ChatView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-            serializer = ChatRequestSerializer(data=request.data)
-            if not knowledge_base_ok:
-                return Response({'reply': 'Sorry, the knowledge base is missing or empty.'}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
-            if not model_ok:
-                return Response({'reply': 'Sorry, the AI model failed to load.'}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+        serializer = ChatRequestSerializer(data=request.data)
+        if not knowledge_base_ok:
+            return Response({'reply': 'Sorry, the knowledge base is missing or empty.'}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+        if not model_ok:
+            return Response({'reply': 'Sorry, the AI model failed to load.'}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
 
-            if serializer.is_valid():
-                user_message = serializer.validated_data['message']
-                # Input validation & sanitization
-                if not user_message or not user_message.strip():
-                    return Response({'reply': 'Pakilagay ang iyong tanong.'}, status=status.HTTP_400_BAD_REQUEST)
-                user_message = user_message.strip()
-                # Optionally limit message length (not truncating, just warning)
-                if len(user_message) > 512:
-                    logging.warning('User message is very long.')
+        if serializer.is_valid():
+            user_message = serializer.validated_data['message']
+            # Input validation & sanitization
+            if not user_message or not user_message.strip():
+                return Response({'reply': 'Pakilagay ang iyong tanong.'}, status=status.HTTP_400_BAD_REQUEST)
+            user_message = user_message.strip()
+            # Optionally limit message length (not truncating, just warning)
+            if len(user_message) > 512:
+                logging.warning('User message is very long.')
 
-                # 1. Retrieve relevant information from the knowledge base
-                relevant_info = retrieve_relevant_info(user_message)
-                if not relevant_info:
-                    relevant_info = "Walang karagdagang impormasyon mula sa knowledge base."
+            # 1. Retrieve relevant information from the knowledge base
+            relevant_info = retrieve_relevant_info(user_message)
 
-                # 2. Construct the prompt for the language model
+            # If an exact answer is found in FAQ, return it directly
+            if relevant_info and user_message.lower() in KNOWLEDGE_BASE.lower():
+                 response_data = {'reply': relevant_info}
+                 response_serializer = ChatResponseSerializer(data=response_data)
+                 response_serializer.is_valid(raise_exception=True)
+                 return Response(response_serializer.data, status=status.HTTP_200_OK)
+
+            # 2. Construct the prompt for the language model
+            if relevant_info:
                 prompt = f"""
 Ikaw si NENA AI, isang napaka-friendly, matalino, at maaasahang financial assistant mula sa BPI. Sagutin mo ang tanong ng user sa Filipino, simple at malinaw, parang kausap mo siya sa personal. Gamitin ang impormasyon mula sa knowledge base kung makakatulong. Kung may English na tanong, sagutin mo pa rin sa Filipino at ipaliwanag ng mabuti. Bigyan mo ng inspirasyon at kumpiyansa ang user sa bawat sagot mo.
 
@@ -106,46 +156,55 @@ Impormasyon mula sa knowledge base:
 Tanong ng User: {user_message}
 
 Mabait na Sagot ni NENA AI sa Filipino:"""
-                # Truncate prompt to avoid tokenization errors (GPT-2 max length is 1024)
-                max_length = 1024
-                prompt = prompt[:max_length]
-
-                # --- AI LOGIC GOES HERE ---
-                # Model inference with timeout
-                ai_reply = None
-                def run_model():
-                    nonlocal ai_reply
-                    try:
-                        inputs = TOKENIZER.encode_plus(prompt, return_tensors='pt', padding=True)
-                        outputs = MODEL.generate(inputs['input_ids'], attention_mask=inputs['attention_mask'], max_new_tokens=100, num_return_sequences=1)
-                        raw_ai_reply = TOKENIZER.decode(outputs[0], skip_special_tokens=True)
-                        # Extract only the answer part, using the last occurrence of 'Answer:'
-                        answer_prefix = "Answer:"
-                        if answer_prefix in raw_ai_reply:
-                            ai_reply = raw_ai_reply.rsplit(answer_prefix, 1)[-1].strip()
-                        else:
-                            ai_reply = raw_ai_reply.strip()
-                        # Remove excessive newlines, spaces, and repeated phrases
-                        ai_reply = " ".join(ai_reply.split())
-                        # Remove repeated answer if present
-                        if ai_reply.lower().startswith(user_message.lower()):
-                            ai_reply = ai_reply[len(user_message):].strip()
-                    except Exception as e:
-                        logging.exception("AI model error: %s", e)
-                        ai_reply = None
-
-                # Run model with timeout
-                thread = threading.Thread(target=run_model)
-                thread.start()
-                thread.join(timeout=10)  # 10 seconds timeout
-                if ai_reply is None:
-                    # Graceful fallback
-                    ai_reply = "Pasensya na, may problema sa AI model. Subukan muli o magtanong ng iba."
-
+            else:
+                # If no relevant info is found, ask the user to rephrase or ask about something else.
+                # This avoids hallucination.
+                ai_reply = "Pasensya na, hindi ko mahanap ang impormasyon tungkol diyan. Maaari mo bang subukang magtanong sa ibang paraan, o magtanong tungkol sa aming mga produkto at serbisyo?"
                 response_data = {'reply': ai_reply}
                 response_serializer = ChatResponseSerializer(data=response_data)
                 response_serializer.is_valid(raise_exception=True)
-
                 return Response(response_serializer.data, status=status.HTTP_200_OK)
 
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            # Truncate prompt to avoid tokenization errors (GPT-2 max length is 1024)
+            max_length = 1024
+            prompt = prompt[:max_length]
+
+            # --- AI LOGIC GOES HERE ---
+            # Model inference with timeout
+            ai_reply = None
+            def run_model():
+                nonlocal ai_reply
+                try:
+                    inputs = TOKENIZER.encode_plus(prompt, return_tensors='pt', padding=True)
+                    outputs = MODEL.generate(inputs['input_ids'], attention_mask=inputs['attention_mask'], max_new_tokens=100, num_return_sequences=1)
+                    raw_ai_reply = TOKENIZER.decode(outputs[0], skip_special_tokens=True)
+                    # Extract only the answer part, using the last occurrence of 'Answer:'
+                    answer_prefix = "Answer:"
+                    if answer_prefix in raw_ai_reply:
+                        ai_reply = raw_ai_reply.rsplit(answer_prefix, 1)[-1].strip()
+                    else:
+                        ai_reply = raw_ai_reply.strip()
+                    # Remove excessive newlines, spaces, and repeated phrases
+                    ai_reply = " ".join(ai_reply.split())
+                    # Remove repeated answer if present
+                    if ai_reply.lower().startswith(user_message.lower()):
+                        ai_reply = ai_reply[len(user_message):].strip()
+                except Exception as e:
+                    logging.exception("AI model error: %s", e)
+                    ai_reply = None
+
+            # Run model with timeout
+            thread = threading.Thread(target=run_model)
+            thread.start()
+            thread.join(timeout=10)  # 10 seconds timeout
+            if ai_reply is None:
+                # Graceful fallback
+                ai_reply = "Pasensya na, may problema sa AI model. Subukan muli o magtanong ng iba."
+
+            response_data = {'reply': ai_reply}
+            response_serializer = ChatResponseSerializer(data=response_data)
+            response_serializer.is_valid(raise_exception=True)
+
+            return Response(response_serializer.data, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
