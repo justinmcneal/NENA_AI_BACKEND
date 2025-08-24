@@ -53,20 +53,20 @@ KNOWLEDGE_BASE = load_knowledge_base()
 # --- Simple Retriever ---
 def retrieve_relevant_info(query):
     """A simple keyword-based retriever to find relevant info from the knowledge base."""
-    query_words = set(query.lower().split())
-    best_match = ""
-    max_score = 0
-
-    # Split the knowledge base into sections
-    sections = KNOWLEDGE_BASE.split('\n\n')
-    for section in sections:
-        section_words = set(section.lower().split())
-        score = len(query_words.intersection(section_words))
-        if score > max_score:
-            max_score = score
-            best_match = section
-
-    return best_match
+    # Simple FAQ retrieval: look for a matching question in the knowledge base
+    lines = KNOWLEDGE_BASE.splitlines()
+    query_lower = query.strip().lower()
+    answer = ""
+    for i, line in enumerate(lines):
+        if line.lower().startswith("question:"):
+            question_text = line.split("Question:", 1)[-1].strip().lower()
+            if query_lower in question_text or question_text in query_lower:
+                # Look for the next line that starts with 'Answer:'
+                for j in range(i+1, min(i+5, len(lines))):
+                    if lines[j].lower().startswith("answer:"):
+                        answer = lines[j].split("Answer:", 1)[-1].strip()
+                        return answer
+    return ""
 
 class ChatView(APIView):
     """
