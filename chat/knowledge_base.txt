@@ -1,0 +1,40 @@
+
+[BPI Loan Products]
+
+Product Name: BanKo
+Description: A microfinance loan product from BPI designed for self-employed micro-entrepreneurs (SEMEs). It offers affordable and accessible financing to help grow small businesses.
+Interest Rate: As low as 2.3% per month.
+Loanable Amount: From PHP 25,000 up to PHP 300,000.
+Repayment Terms: 12, 18, or 24 months.
+Requirements:
+- Filipino citizen, 21-60 years old.
+- Business has been operating for at least 1 year.
+- Valid ID (e.g., UMID, Driver's License, Passport).
+- Business Permit or Barangay Permit.
+- Proof of income (e.g., sales records, receipts).
+
+Product Name: NegosyoKo
+Description: A loan program for small and medium enterprises (SMEs) that need capital for expansion, new equipment, or additional inventory.
+Interest Rate: Varies depending on the loan amount and term.
+Loanable Amount: Starts at PHP 300,000.
+Repayment Terms: Flexible, up to 5 years.
+Requirements:
+- Registered business (sole proprietorship, partnership, or corporation).
+- Business has been profitable for at least 2 years.
+- Audited Financial Statements.
+- Bank Statements for the last 6 months.
+- Business Permits and Licenses.
+
+[Frequently Asked Questions (FAQs)]
+
+Question: Safe ba ako dito? (Is it safe for me here?)
+Answer: Oo, safe ka dito. Ang NENA AI ay isang opisyal na platform ng BPI. Ang iyong impormasyon ay protektado at ginagamit lamang para sa iyong loan application. (Yes, you are safe here. NENA AI is an official BPI platform. Your information is protected and used only for your loan application.)
+
+Question: Paano mag-apply? (How to apply?)
+Answer: Madali lang mag-apply. Una, sagutin mo ang ilang tanong mula sa akin para malaman natin kung anong loan ang bagay sa iyo. Pagkatapos, tutulungan kitang ihanda ang mga kailangan mong dokumento. (It's easy to apply. First, answer a few questions from me so we can determine which loan is right for you. After that, I will help you prepare the necessary documents.)
+
+Question: Anong kailangan? (What is needed?)
+Answer: Ang mga kailangan ay depende sa loan na iyong aapplyan. Karaniwan, kailangan mo ng valid ID, business permit, at patunay ng iyong kita. Huwag kang mag-alala, gagabayan kita sa bawat hakbang. (The requirements depend on the loan you are applying for. Usually, you need a valid ID, business permit, and proof of your income. Don't worry, I will guide you through every step.)
+
+Question: Pwede ba sa walang bangko? (Is it possible for someone without a bank account?)
+Answer: Oo, ang NENA AI ay dinisenyo para tulungan ang mga tulad mo na walang bank account. Kung maaprubahan ang iyong loan, tutulungan ka naming mag-set up ng iyong BPI account. (Yes, NENA AI is designed to help people like you who don't have a bank account. If your loan is approved, we will help you set up your BPI account.)
