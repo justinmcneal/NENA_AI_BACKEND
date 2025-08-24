@@ -58,11 +58,14 @@ def retrieve_relevant_info(query):
     2. If no FAQ match, searches for a product name in the query.
     3. If no product match, returns an empty string.
     """
+    import difflib
     query_lower = query.strip().lower()
     lines = KNOWLEDGE_BASE.splitlines()
-    
-    # 1. FAQ Retrieval
+
+    # 1. FAQ Retrieval (fuzzy matching)
     in_faq_section = False
+    faq_questions = []
+    faq_answers = []
     for i, line in enumerate(lines):
         if "[frequently asked questions (faqs)]" in line.lower():
             in_faq_section = True
@@ -70,11 +73,27 @@ def retrieve_relevant_info(query):
         if in_faq_section:
             if line.lower().startswith("question:"):
                 question_text = line.split("Question:", 1)[-1].strip().lower()
-                if query_lower == question_text:
-                    # Found an exact match, return the answer
-                    for j in range(i + 1, len(lines)):
-                        if lines[j].lower().startswith("answer:"):
-                            return lines[j].split("Answer:", 1)[-1].strip()
+                faq_questions.append((i, question_text))
+            if line.lower().startswith("answer:"):
+                answer_text = line.split("Answer:", 1)[-1].strip()
+                faq_answers.append((i, answer_text))
+
+    # Find the best matching question using difflib
+    best_score = 0
+    best_answer = ""
+    for q_idx, question_text in faq_questions:
+        score = difflib.SequenceMatcher(None, query_lower, question_text).ratio()
+        if query_lower in question_text or question_text in query_lower:
+            score += 0.2  # boost for substring match
+        if score > best_score and score > 0.6:  # threshold for fuzzy match
+            # Find the next answer after this question
+            for a_idx, answer_text in faq_answers:
+                if a_idx > q_idx:
+                    best_score = score
+                    best_answer = answer_text
+                    break
+    if best_answer:
+        return best_answer
     
     # 2. Product Retrieval
     in_product_section = False
