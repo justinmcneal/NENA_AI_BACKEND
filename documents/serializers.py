@@ -29,3 +29,8 @@ class DocumentUploadSerializer(serializers.Serializer):
                 document_type=document_type,
                 file=document_file
             )
+
+class UserDocumentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserDocument
+        fields = ['id', 'document_type', 'file', 'uploaded_at', 'analysis_status']
