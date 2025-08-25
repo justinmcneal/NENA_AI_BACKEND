@@ -3,6 +3,7 @@ from django.urls import path
 from django.shortcuts import render
 from django.db.models import Count
 from .models import CustomUser
+from documents.admin import UserDocumentInline
 
 @admin.register(CustomUser)
 class CustomUserAdmin(admin.ModelAdmin):
@@ -13,6 +14,31 @@ class CustomUserAdmin(admin.ModelAdmin):
     list_filter = ('is_active', 'is_staff', 'verification_status', 'loan_status')
     search_fields = ('phone_number', 'first_name', 'last_name')
     ordering = ('-date_joined',)
+    inlines = [UserDocumentInline]
+
+    fieldsets = (
+        (None, {
+            'fields': ('phone_number', 'password')
+        }),
+        ('Personal Info', {
+            'fields': ('first_name', 'middle_name', 'last_name', 'date_of_birth', 'gender', 'civil_status', 'education_level')
+        }),
+        ('Address',
+            {'fields': ('region', 'province', 'city_town', 'barangay')
+        }),
+        ('Business Info', {
+            'fields': ('business_name', 'business_address', 'business_industry', 'income')
+        }),
+        ('Status', {
+            'fields': ('verification_status', 'loan_status', 'is_active', 'is_staff')
+        }),
+        ('Important dates', {
+            'fields': ('last_login', 'date_joined', 'last_otp_sent_at')
+        }),
+        ('Internal', {
+            'fields': ('pin_hash', 'groups', 'user_permissions')
+        })
+    )
 
     def get_urls(self):
         urls = super().get_urls()

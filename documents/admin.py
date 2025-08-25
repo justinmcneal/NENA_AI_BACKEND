@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.urls import path, reverse
 from django.shortcuts import render, get_object_or_404
 from django.utils.html import format_html
-from .models import UserRequest, Attachment
+from .models import UserRequest, Attachment, UserDocument
 
 class AttachmentInline(admin.TabularInline):
     model = Attachment
@@ -61,3 +61,27 @@ class UserRequestAdmin(admin.ModelAdmin):
             title=f"Details for Request #{object_id}"
         )
         return render(request, 'admin/documents/userrequest_detail.html', context)
+
+@admin.register(UserDocument)
+class UserDocumentAdmin(admin.ModelAdmin):
+    list_display = ('user', 'document_type', 'uploaded_at', 'analysis_status', 'file_link')
+    list_filter = ('document_type', 'analysis_status', 'uploaded_at')
+    search_fields = ('user__phone_number', 'document_type')
+    readonly_fields = ('file_link',)
+
+    def file_link(self, instance):
+        if instance.file:
+            return format_html('<a href="{}" target="_blank">View Document</a>', instance.file.url)
+        return "No file"
+    file_link.short_description = 'Document Link'
+
+class UserDocumentInline(admin.TabularInline):
+    model = UserDocument
+    extra = 0
+    readonly_fields = ('document_type', 'uploaded_at', 'analysis_status', 'file_link')
+
+    def file_link(self, instance):
+        if instance.file:
+            return format_html('<a href="{}" target="_blank">View Document</a>', instance.file.url)
+        return "No file"
+    file_link.short_description = 'Document Link'
