@@ -7,5 +7,6 @@ Pillow
 transformers
 langchain
 langchain-community
-faiss-cpu
 sentence-transformers
+jq
+chromadb

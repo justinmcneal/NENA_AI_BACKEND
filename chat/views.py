@@ -21,7 +21,10 @@ class ChatView(APIView):
 
         # Determine conversation_id
         if conversation_id_str:
-            conversation_id = uuid.UUID(conversation_id_str)
+            if isinstance(conversation_id_str, uuid.UUID):
+                conversation_id = conversation_id_str
+            else:
+                conversation_id = uuid.UUID(str(conversation_id_str))
         else:
             conversation_id = uuid.uuid4()
 
