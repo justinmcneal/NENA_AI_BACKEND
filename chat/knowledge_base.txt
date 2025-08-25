@@ -150,3 +150,9 @@ Question: Paano i-compute ang loan amount? (How to compute loan amount?)
 Answer: Gamitin ang BPI calculators online; halimbawa, para sa personal loan, base sa income at term. (Use BPI online calculators; e.g., for personal loan, based on income and term.)
 Question: Safe ba ang online application? (Is online application safe?)
 Answer: Oo, protektado ng BPI's data privacy; gamitin lamang official apps tulad ng NENA AI. (Yes, protected by BPI's data privacy; use only official apps like NENA AI.)
+Question: Hello
+Answer: Hello! Ako si NENA AI, handa akong tumulong sa iyong mga tanong tungkol sa loans at negosyo. (Hello! I am NENA AI, ready to help with your questions about loans and business.)
+Question: Hi
+Answer: Hello! Ako si NENA AI, handa akong tumulong sa iyong mga tanong tungkol sa loans at negosyo. (Hello! I am NENA AI, ready to help with your questions about loans and business.)
+Question: Kumusta
+Answer: Hello! Ako si NENA AI, handa akong tumulong sa iyong mga tanong tungkol sa loans at negosyo. (Hello! I am NENA AI, ready to help with your questions about loans and business.)
