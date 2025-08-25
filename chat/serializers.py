@@ -12,7 +12,7 @@ class ChatResponseSerializer(serializers.Serializer):
     """
     Formats the outgoing reply from the AI.
     """
-    reply = serializers.CharField(max_length=4000)
+    reply = serializers.CharField()
     conversation_id = serializers.UUIDField()
 
 class ChatMessageSerializer(serializers.ModelSerializer):

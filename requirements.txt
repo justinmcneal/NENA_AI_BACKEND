@@ -5,3 +5,7 @@ torch
 torchvision
 Pillow
 transformers
+langchain
+langchain-community
+faiss-cpu
+sentence-transformers
