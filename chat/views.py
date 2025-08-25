@@ -8,6 +8,8 @@ import logging
 import threading
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from rest_framework.permissions import AllowAny
+from .models import ChatMessage # Import the ChatMessage model
+import uuid # Import uuid for conversation_id
 
 # --- AI Model and Knowledge Base Loading ---
 
@@ -145,24 +147,78 @@ class ChatView(APIView):
             return Response({'reply': 'Sorry, the AI model failed to load.'}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
 
         if serializer.is_valid():
-            user_message = serializer.validated_data['message']
+            user_message_text = serializer.validated_data['message']
+            conversation_id_str = serializer.validated_data.get('conversation_id')
+
             # Input validation & sanitization
-            if not user_message or not user_message.strip():
+            if not user_message_text or not user_message_text.strip():
                 return Response({'reply': 'Pakilagay ang iyong tanong.'}, status=status.HTTP_400_BAD_REQUEST)
-            user_message = user_message.strip()
+            user_message_text = user_message_text.strip()
             # Optionally limit message length (not truncating, just warning)
-            if len(user_message) > 512:
+            if len(user_message_text) > 512:
                 logging.warning('User message is very long.')
 
+            # Determine conversation_id
+            if conversation_id_str:
+                try:
+                    conversation_id = uuid.UUID(conversation_id_str)
+                except ValueError:
+                    return Response({'reply': 'Invalid conversation ID format.'}, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                conversation_id = uuid.uuid4() # New conversation
+            
+            # Save user message to database
+            # Assuming request.user is available via authentication (e.g., TokenAuthentication)
+            # For simplicity, if user is not authenticated, we'll use a placeholder or raise an error.
+            # In a real app, you'd ensure the user is authenticated here.
+            user_instance = request.user if request.user.is_authenticated else None # Or get a default user
+            if not user_instance:
+                # This is a critical point. If you require authentication, uncomment and handle.
+                # return Response({'reply': 'Authentication required to start a chat.'}, status=status.HTTP_401_UNAUTHORIZED)
+                # For now, let's assume a user is always available or create a dummy one for testing
+                # This part needs to be aligned with your actual user management.
+                # For demonstration, let's use the first user if available, or create a dummy.
+                from django.contrib.auth import get_user_model
+                User = get_user_model()
+                if User.objects.exists():
+                    user_instance = User.objects.first()
+                else:
+                    # Create a dummy user if none exists for testing purposes
+                    user_instance = User.objects.create_user(username='dummy_chat_user', password='dummy_password')
+
+            user_chat_message = ChatMessage.objects.create(
+                user=user_instance,
+                conversation_id=conversation_id,
+                message_text=user_message_text,
+                is_from_user=True
+            )
+
+            # Retrieve conversation history
+            # Fetch last N messages (e.g., 5 pairs of user/AI messages) for context
+            history_messages = ChatMessage.objects.filter(
+                user=user_instance,
+                conversation_id=conversation_id
+            ).exclude(id=user_chat_message.id).order_by('-timestamp')[:10] # Get last 10 messages (5 pairs)
+
+            # Format conversation history for the prompt
+            conversation_history_str = ""
+            for msg in reversed(history_messages): # Reverse to get chronological order
+                if msg.is_from_user:
+                    conversation_history_str += f"User: {msg.message_text}\n"
+                else:
+                    conversation_history_str += f"NENA AI: {msg.response_text}\n"
+
             # 1. Retrieve relevant information from the knowledge base
-            relevant_info = retrieve_relevant_info(user_message)
+            relevant_info = retrieve_relevant_info(user_message_text)
 
             # If an exact answer is found in FAQ, return it directly
-            if relevant_info and user_message.lower() in KNOWLEDGE_BASE.lower():
-                 response_data = {'reply': relevant_info}
-                 response_serializer = ChatResponseSerializer(data=response_data)
-                 response_serializer.is_valid(raise_exception=True)
-                 return Response(response_serializer.data, status=status.HTTP_200_OK)
+            # This condition needs to be re-evaluated with conversation history.
+            # For now, let's always pass to LLM if relevant_info is found.
+            # if relevant_info and user_message_text.lower() in KNOWLEDGE_BASE.lower():
+            #      response_data = {'reply': relevant_info, 'conversation_id': str(conversation_id)}
+            #      response_serializer = ChatResponseSerializer(data=response_data)
+            #      response_serializer.is_valid(raise_exception=True)
+            #      return Response(response_serializer.data, status=status.HTTP_200_OK)
 
             # 2. Construct the prompt for the language model
             if relevant_info:
@@ -172,14 +228,25 @@ Ikaw si NENA AI, isang napaka-friendly, matalino, at maaasahang financial assist
 Impormasyon mula sa knowledge base:
 {relevant_info}
 
-Tanong ng User: {user_message}
+{conversation_history_str}
+Tanong ng User: {user_message_text}
 
 Mabait na Sagot ni NENA AI sa Filipino:"""
             else:
                 # If no relevant info is found, ask the user to rephrase or ask about something else.
                 # This avoids hallucination.
                 ai_reply = "Pasensya na, hindi ko mahanap ang impormasyon tungkol diyan. Maaari mo bang subukang magtanong sa ibang paraan, o magtanong tungkol sa aming mga produkto at serbisyo?"
-                response_data = {'reply': ai_reply}
+                
+                # Save AI response to database
+                ChatMessage.objects.create(
+                    user=user_instance,
+                    conversation_id=conversation_id,
+                    message_text=user_message_text, # Store the user's original message
+                    response_text=ai_reply,
+                    is_from_user=False
+                )
+
+                response_data = {'reply': ai_reply, 'conversation_id': str(conversation_id)}
                 response_serializer = ChatResponseSerializer(data=response_data)
                 response_serializer.is_valid(raise_exception=True)
                 return Response(response_serializer.data, status=status.HTTP_200_OK)
@@ -206,8 +273,8 @@ Mabait na Sagot ni NENA AI sa Filipino:"""
                     # Remove excessive newlines, spaces, and repeated phrases
                     ai_reply = " ".join(ai_reply.split())
                     # Remove repeated answer if present
-                    if ai_reply.lower().startswith(user_message.lower()):
-                        ai_reply = ai_reply[len(user_message):].strip()
+                    if ai_reply.lower().startswith(user_message_text.lower()):
+                        ai_reply = ai_reply[len(user_message_text):].strip()
                 except Exception as e:
                     logging.exception("AI model error: %s", e)
                     ai_reply = None
@@ -220,7 +287,16 @@ Mabait na Sagot ni NENA AI sa Filipino:"""
                 # Graceful fallback
                 ai_reply = "Pasensya na, may problema sa AI model. Subukan muli o magtanong ng iba."
 
-            response_data = {'reply': ai_reply}
+            # Save AI response to database
+            ChatMessage.objects.create(
+                user=user_instance,
+                conversation_id=conversation_id,
+                message_text=user_message_text, # Store the user's original message
+                response_text=ai_reply,
+                is_from_user=False
+            )
+
+            response_data = {'reply': ai_reply, 'conversation_id': str(conversation_id)}
             response_serializer = ChatResponseSerializer(data=response_data)
             response_serializer.is_valid(raise_exception=True)
 
